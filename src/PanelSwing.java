@@ -1,3 +1,8 @@
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -12,17 +17,17 @@ public class PanelSwing extends JPanel {
     String nombreArchivo, ruta;
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion;
-    JMenuItem abrir, guardar, salir, brillo, color, escala;
+    JMenuItem abrir, guardar, salir, brillo, escala;
     JScrollPane panelDespl;
-    JPanel panelBajo, panelBrillo, panelColor, panelVacio;
+    JPanel panelBajo, panelBrillo, panelColor, panelVacio, panelHistograma, panelGrafico;
     int altura = 80;
     Image imagen;
     Image imgAux;
     EditorImg editor;
     PanelDeImagen lienzo;
-    JSlider jslBrillo, jslRojo, jslVerde, jslAzul;
-    JLabel lblRojo, lblVerde, lblAzul;
+    JSlider jslBrillo;
     CardLayout esqueInf;
+
     /**
      * @Desc Constructor de la clase
      * @param editor
@@ -43,16 +48,15 @@ public class PanelSwing extends JPanel {
         menuArchivo.addSeparator();
         salir = menuArchivo.add("Salir");
         brillo = menuEdicion.add("Ajustar Brillo");
-        color = menuEdicion.add("Ajustar Colores");
         escala = menuEdicion.add("Escala de Grises");
         brillo.setEnabled(false);
-        color.setEnabled(false);
         escala.setEnabled(false);
         barraMenu.add(menuArchivo);
         barraMenu.add(menuEdicion);
         this.add("North",barraMenu);  //Agregamos la barra de menu
         creapanelCentral();     //Creamos el panel en el que se mostrara la imagen seleccionada
         creapanelBajo();     //Creamos el panel en el que se mostraran los controles para manipular la imagen
+        creaPanelHistograma();
     }
     /**
      * @Desc Método que crea el contenido del panel central de la ventana
@@ -86,45 +90,28 @@ public class PanelSwing extends JPanel {
         panelBrillo.add("South",jslBrillo);
         panelBajo.add("carta1", panelVacio);
         panelBajo.add("carta2", panelBrillo);
-        creaPaletas();
         esqueInf.show(panelBajo, "carta1");
         this.add("South",panelBajo);
     }
-    /**
-     * @Desc Método que crea el contenido del panel inferior de la ventana
-     */
 
-    private void creaPaletas()
-    {
-        GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints constrain = new GridBagConstraints();
-        panelColor.setLayout(gridbag);
-        lblRojo = new JLabel("Rojo");
-        lblVerde = new JLabel("Verde");
-        lblAzul = new JLabel("Azul");
-        constrain.gridx = 0; constrain.gridy = 0;
-        constrain.gridheight = 1; constrain.gridwidth = 2;
-        gridbag.setConstraints(lblRojo, constrain);
-        panelColor.add(lblRojo);
-        constrain.gridx = 2; constrain.gridy = 0;
-        gridbag.setConstraints(lblVerde, constrain);
-        panelColor.add(lblVerde);
-        constrain.gridx = 4; constrain.gridy = 0;
-        gridbag.setConstraints(lblAzul, constrain);
-        panelColor.add(lblAzul);
-        jslRojo = new JSlider(SwingConstants.HORIZONTAL,0,50,0);
-        jslVerde = new JSlider(SwingConstants.HORIZONTAL,0,50,0);
-        jslAzul = new JSlider(SwingConstants.HORIZONTAL,0,50,0);
-        constrain.gridx = 0; constrain.gridy = 1;
-        constrain.gridheight = 1; constrain.gridwidth = 2;
-        gridbag.setConstraints(jslRojo, constrain);
-        panelColor.add(jslRojo);
-        constrain.gridx = 2; constrain.gridy = 1;
-        gridbag.setConstraints(jslVerde, constrain);
-        panelColor.add(jslVerde);
-        constrain.gridx = 4; constrain.gridy = 1;
-        gridbag.setConstraints(jslAzul, constrain);
-        panelColor.add(jslAzul);
-        panelBajo.add("carta3", panelColor);
+    private void creaPanelHistograma(){
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "HISTOGRAMA", // Title
+                "Nivel de gris", // x-axis Label
+                "Numero de pixels", // y-axis Label
+                null, // Dataset
+                PlotOrientation.VERTICAL, // Plot Orientation
+                true, // Show Legend
+                true, // Use tooltips
+                false // Configure chart to generate URLs?
+        );
+
+        ChartPanel panelGrafico = new ChartPanel(chart);
+        panelHistograma = new JPanel();
+        panelHistograma.add(panelGrafico);
+
+        add("East",panelHistograma);
+
+
     }
 }

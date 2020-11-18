@@ -31,7 +31,7 @@ public class PanelDeImagen extends JPanel{
     }
     /**
      * @Desc Método a través del cual la clase obtiene la referencia hacia el panel en el cual se encuentra contenido.
-     * @param i
+     * @param
      */
     public void estableceBase(JScrollPane contenedor)
     {
