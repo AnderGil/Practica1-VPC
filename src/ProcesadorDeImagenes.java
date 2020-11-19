@@ -1,10 +1,7 @@
-import java.awt.Canvas;
+import java.awt.*;
 import java.awt.image.*;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.File;
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 /**
@@ -84,36 +81,37 @@ public class ProcesadorDeImagenes extends Canvas {
     /**
      * @Desc Método que convierte la imagen base contenida en una imagen a escala de grises
      * @return Verdadero si todo salió bien, falso en caso de error
+     * @param
+     * @param lut
      */
-    public boolean escalaDeGrises()
+    public int[] escalaDeGrises(int[] lut)
     {
-        boolean estado = true;
-        int p, promedio, rojo, verde, azul;
+        int p, rojo, verde, azul, gris;
+        Color newColor;
         int a = imagenBase.getWidth(this);  //Ancho
         int h = imagenBase.getHeight(this); //Alto
         int totalDePixeles = a * h;
-        int pixeles[] = new int[totalDePixeles];   //Arreglo de pixeles
-        PixelGrabber pg = new PixelGrabber(imagenBase,0,0,a,h,pixeles,0,a);
-        try
-        {
-            pg.grabPixels();
-            for(int i = 0; i < totalDePixeles; i++)
-            {
-                p = pixeles[i]; //Valor de un pixel
-                rojo = (0xff & (p>>16));  //Desplaza el entero p 16 bits a la derecha y aplica la operacion AND a los primeros 8 bits
-                verde = (0xff & (p>>8));  //Desplaza el entero p 8 bits a la derecha  y aplica la operacion AND a los siguientes 8 bits
-                azul = (0xff & p) ;        //Aplica la operacion AND a los siguientes 8 bits
-                promedio = (int) ((rojo+verde+azul)/3);
-                pixeles[i]=(0xff000000|promedio<<16|promedio<<8|promedio);
+        lut = new int[totalDePixeles];   //pixeles
+        BufferedImage bImagen = creaBufferedImage(imagenBase);
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                p = bImagen.getRGB(i,j);
+                Color color = new Color(p, true);
+                rojo = color.getRed();
+                verde = color.getGreen();
+                azul= color.getBlue();
+
+                gris = (int) (0.299*rojo + 0.517*verde + 0.114*azul);
+                newColor = new Color(gris, gris, gris);
+                lut[i*(h-1) + j] = gris;
+                bImagen.setRGB(i, j, newColor.getRGB());
             }
-            imagenModificada  = createImage(new MemoryImageSource(a,h,pixeles,0,a));
-        }catch(InterruptedException e)
-        {
-            //JOptionPane.showMessageDialog((Component)null,"Error del sistema : "+e.getMessage(),"Error de Imagen",JOptionPane.OK_OPTION);
-            estado = false;
-            this.mensajeDeError = e.getMessage();
         }
-        return estado;
+
+        imagenModificada = bImagen;
+
+        return lut;
     }
 
     /**

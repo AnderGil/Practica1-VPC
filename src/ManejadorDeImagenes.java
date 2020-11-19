@@ -1,7 +1,13 @@
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 import java.awt.*;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import java.awt.image.BufferedImage;
+import javax.swing.*;
+
 /**
  * @Desc Clase del nivel de la capa de negocios, que implementa las operaciones que son llamadas desde el Controlador de la aplicación
  * para poder cargar las imagenes, alamacenarlas y modificaralas, apoyandose en un objeto la clase de más bajo nivel, es decir ProcesadorDeImagenes 
@@ -10,11 +16,16 @@ import javax.swing.JPanel;
  */
 public class ManejadorDeImagenes {
     ProcesadorDeImagenes procesador;
-
+    double[] histograma;
+    double[] histogramaAcumulado;
+    int[] lut;
     boolean editado = false;
 
     public ManejadorDeImagenes() {
+
         procesador = new ProcesadorDeImagenes();
+        histograma = new double[256];
+        histogramaAcumulado = new double[256];
     }
     /**
      * @Desc Método que lleva a cabo la carga de un archivo de imagen
@@ -47,7 +58,6 @@ public class ManejadorDeImagenes {
             Image imagen = procesador.cargaImagen(ruta, nombreArchivo);
             lienzo.estableceImagen(imagen);
             lienzo.repaint();
-
             editado = false;
         }
         else
@@ -89,9 +99,10 @@ public class ManejadorDeImagenes {
      */
     public void muestraEscalaDeGrises(PanelDeImagen lienzo)
     {
-        procesador.escalaDeGrises();
+        lut = procesador.escalaDeGrises(lut);
         lienzo.estableceImagen(procesador.devuelveImagenModificada());
         lienzo.repaint();
+
     }
     /**
      * @Desc Método que lleva a cabo la modificación del brillo de la imagen cargada y despliega la imagen resultante en pantalla
@@ -105,19 +116,7 @@ public class ManejadorDeImagenes {
         lienzo.repaint();
         editado = true;
     }
-    /**
-     * @Desc @Desc Método que lleva a cabo la modificación de los colores de la imagen cargada y despliega la imagen resultante en pantalla
-     * @param lienzo
-     * @param rojo
-     * @param verde
-     * @param azul
-     */
-    public void muestraColores(PanelDeImagen lienzo, int rojo, int verde, int azul)
-    {
-        lienzo.estableceImagen(procesador.devuelveImagenModificada());
-        lienzo.repaint();
-        editado = true;
-    }
+
     /**
      * @Desc Método que coloca en la pantalla la imagen original que se cargó con el método cargarArchivoDeImagen
      * @param lienzo
@@ -128,4 +127,37 @@ public class ManejadorDeImagenes {
         lienzo.repaint();
         editado = false;
     }
+
+    public void actualizarHistogramas(JFreeChart hist, JFreeChart histAcumulado) {
+        BufferedImage imagen = procesador.creaBufferedImage(procesador.devuelveImagenModificada());
+        int gris;
+        for (int i = 0; i < lut.length; i++) {
+            gris = lut[i];
+            histograma[gris] = histograma[gris] +1;
+        }
+
+        double sum = 0;
+
+        XYSeries set1 = new XYSeries("");
+        XYSeries set2 = new XYSeries("");
+
+        XYSeriesCollection dataset1 = new XYSeriesCollection();
+        XYSeriesCollection dataset2 = new XYSeriesCollection();
+
+        for (int i = 0; i < histograma.length; i++) {
+            set1.add(i, histograma[i]);
+
+            sum = sum + histograma[i];
+            histogramaAcumulado[i] = sum;
+            set2.add(i, histogramaAcumulado[i]);
+        }
+
+        dataset1.addSeries(set1);
+        hist.getXYPlot().setDataset(dataset1);
+
+        dataset2.addSeries(set2);
+        histAcumulado.getXYPlot().setDataset(dataset2);
+
+    }
+
 }

@@ -17,15 +17,19 @@ public class EditorImg extends JFrame{
         super("Editor de imagenes");
         Container contentPane = getContentPane();
         panel = new PanelSwing(this);
-
         controlador = new Controlador(panel);
+
         panel.abrir.addActionListener(controlador);
         panel.guardar.addActionListener(controlador);
         panel.salir.addActionListener(controlador);
         panel.brillo.addActionListener(controlador);
         panel.escala.addActionListener(controlador);
         panel.jslBrillo.addChangeListener(controlador);
+        panel.histogramaAcc.addActionListener(controlador);
+        panel.histograma.addActionListener(controlador);
         contentPane.add(panel);
+
+
     }
 
     public static void main(String[] args) {

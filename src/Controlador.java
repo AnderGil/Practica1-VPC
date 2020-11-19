@@ -23,13 +23,17 @@ public class Controlador implements ActionListener, ChangeListener{
      */
     public void actionPerformed(ActionEvent ie) {
         JMenuItem i = (JMenuItem)ie.getSource();
+        System.out.println(i.getText());
         if(i.getText() == "Abrir"){
             boolean estado = manejador.cargaArchivoDeImagen(panel, panel.lienzo);
             if(estado) {
                 panel.guardar.setEnabled(true);
                 panel.brillo.setEnabled(true);
                 panel.escala.setEnabled(true);
-                panel.esqueInf.show(panel.panelBajo, "carta1");
+                panel.esqueInf1.show(panel.panelBajo, "carta1");
+                panel.esqueInf2.show(panel.panelHistograma, "carta1");
+                panel.histograma.setEnabled(false);
+                panel.histogramaAcc.setEnabled(false);
             }
         }
         else if(i.getText() == "Guardar")
@@ -40,17 +44,24 @@ public class Controlador implements ActionListener, ChangeListener{
         {
             manejador.restableceImagen(panel.lienzo);
             panel.jslBrillo.setValue(0);
-            panel.esqueInf.show(panel.panelBajo, "carta2");
-        }
-        else if(i.getText() == "Ajustar Colores")
-        {
-            manejador.restableceImagen(panel.lienzo);
-            panel.esqueInf.show(panel.panelBajo, "carta3");
+            panel.esqueInf1.show(panel.panelBajo, "carta2");
         }
         else if(i.getText() == "Escala de Grises")
         {
-            panel.esqueInf.show(panel.panelBajo, "carta1");
+            panel.esqueInf1.show(panel.panelBajo, "carta1");
             manejador.muestraEscalaDeGrises(panel.lienzo);
+            manejador.actualizarHistogramas(panel.hist, panel.histAcumulado);
+            panel.esqueInf2.show(panel.panelHistograma, "carta2");
+            panel.histograma.setEnabled(true);
+            panel.histogramaAcc.setEnabled(true);
+        }
+        else if(i.getText() == "Histograma")
+        {
+            panel.esqueInf2.show(panel.panelHistograma, "carta2");
+        }
+        else if(i.getText() == "Histograma acumulado")
+        {
+            panel.esqueInf2.show(panel.panelHistograma, "carta3");
         }
     }
     /**
@@ -59,7 +70,7 @@ public class Controlador implements ActionListener, ChangeListener{
     public void stateChanged(ChangeEvent e)
     {
         JSlider slider = (JSlider) e.getSource();
-        if(slider == panel.jslBrillo)
+        if (slider == panel.jslBrillo)
             manejador.muestraBrillo(panel.lienzo, slider.getValue());
     }
 }
