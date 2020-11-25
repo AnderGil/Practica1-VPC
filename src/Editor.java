@@ -8,32 +8,32 @@ import javax.swing.*;
  * @version 1.0
  * @category Multimedia
  */
-public class EditorImg extends JFrame{
+public class Editor extends JFrame{
     static final long serialVersionUID=10000;
     private PanelSwing panel;
     private Controlador controlador;
 
-    EditorImg() {
+    Editor() {
         super("Editor de imagenes");
         Container contentPane = getContentPane();
         panel = new PanelSwing(this);
         controlador = new Controlador(panel);
 
+        panel.lienzo.addMouseListener(controlador);
         panel.abrir.addActionListener(controlador);
         panel.guardar.addActionListener(controlador);
         panel.salir.addActionListener(controlador);
-        panel.brillo.addActionListener(controlador);
         panel.escala.addActionListener(controlador);
-        panel.jslBrillo.addChangeListener(controlador);
-        panel.histogramaAcc.addActionListener(controlador);
-        panel.histograma.addActionListener(controlador);
+        panel.subimagen.addActionListener(controlador);
+        panel.aceptar.addActionListener(controlador);
+        panel.datos.addActionListener(controlador);
+        panel.histogramas.addActionListener(controlador);
         contentPane.add(panel);
-
 
     }
 
     public static void main(String[] args) {
-        EditorImg editor = new EditorImg();
+        Editor editor = new Editor();
         editor.setBounds(120, 120, 1200, 900);
         editor.setExtendedState(JFrame.MAXIMIZED_BOTH);
         editor.setVisible(true);

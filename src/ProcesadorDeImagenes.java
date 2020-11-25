@@ -24,6 +24,11 @@ public class ProcesadorDeImagenes extends Canvas {
         imagenModificada = null;
         tipoDeImagen = (String)imagenBase.getProperty("type", this);
     }
+    public void estableceImagen(Image imagen, String tipo) {
+        imagenBase = imagen;
+        imagenModificada = null;
+        tipoDeImagen = tipo;
+    }
     /**
      * @Desc Método que permite agregar una imagen al procesador directamente desde un archivo de imagen
      */
@@ -38,46 +43,7 @@ public class ProcesadorDeImagenes extends Canvas {
             tipoDeImagen = partes[tope - 1];
         return imagenBase;
     }
-    /**
-     * @Desc Método que modifica el brillo de la imagen base contenida a partir del valor de intesidad recibido
-     * @param intensidad
-     * @return Verdadero si todo salió bien, falso en caso de error
-     */
-    public boolean modificaBrillo(int intensidad)
-    {
-        boolean estado = true;
-        int p, rojo, verde, azul;
-        int a = imagenBase.getWidth(this);  //Ancho
-        int h = imagenBase.getHeight(this); //Alto
-        int totalDePixeles = a * h;
-        int pixeles[] = new int[totalDePixeles];   //Arreglo de pixeles
-        PixelGrabber pg = new PixelGrabber(imagenBase,0,0,a,h,pixeles,0,a);
-        try
-        {
-            pg.grabPixels();
-            for(int i = 0; i < totalDePixeles; i++)
-            {
-                p = pixeles[i]; //Valor de un pixel
-                rojo = (0xff & (p>>16)) + intensidad;  //Desplaza el entero p 16 bits a la derecha y aplica la operacion AND a los primeros 8 bits
-                verde = (0xff & (p>>8)) + intensidad;  //Desplaza el entero p 8 bits a la derecha  y aplica la operacion AND a los siguientes 8 bits
-                azul = (0xff & p) + intensidad;        //Aplica la operacion AND a los siguientes 8 bits
-                if(rojo>255) rojo=255;
-                if(verde>255) verde=255;
-                if(azul>255) azul=255;
-                if(rojo<0) rojo=0;
-                if(verde<0) verde=0;
-                if(azul<0) azul=0;
-                pixeles[i]=(0xff000000|rojo<<16|verde<<8|azul);
-            }
-            imagenModificada  = createImage(new MemoryImageSource(a,h,pixeles,0,a));
-        }catch(InterruptedException e)
-        {
-            //JOptionPane.showMessageDialog((Component)null,"Error del sistema : "+e.getMessage(),"Error de Imagen",JOptionPane.OK_OPTION);
-            estado = false;
-            this.mensajeDeError = e.getMessage();
-        }
-        return estado;
-    }
+
     /**
      * @Desc Método que convierte la imagen base contenida en una imagen a escala de grises
      * @return Verdadero si todo salió bien, falso en caso de error
@@ -164,6 +130,8 @@ public class ProcesadorDeImagenes extends Canvas {
     {
         return imagenBase;
     }
+
+    public String devuelveTipo() { return tipoDeImagen; }
     /**
      * @Desc Método que retora el último mensaje de error producido por los métodos de la clase
      * @return
@@ -188,5 +156,40 @@ public class ProcesadorDeImagenes extends Canvas {
         Graphics g = bufferedImageDeSalida.getGraphics();
         g.drawImage(imagenDeEntrada, 0, 0, null);
         return bufferedImageDeSalida;
+    }
+
+    public boolean seleccionarSubImagen(int firstPointX, int firstPointY, int secondPointX, int secondPointY, PanelSwing panel) {
+        BufferedImage img = creaBufferedImage(imagenBase);
+
+        if (firstPointX < 0 || firstPointY < 0 || secondPointX > img.getWidth() || secondPointY > img.getHeight()) {
+            panel.errorLabel.setText("ERROR. No introduzcas coordenadas que sobresalgan de la dimensión de la foto");
+            return false;
+        }
+        else {
+            img = img.getSubimage(firstPointX, firstPointY, secondPointX - firstPointX, secondPointY - firstPointX);
+            imagenModificada = img;
+            panel.errorLabel.setText("");
+            return true;
+        }
+    }
+
+    public int[] actualizarLUT(int[] lut) {
+        int gris;
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this); //Alto
+        int totalDePixeles = a * h;
+        lut = new int[totalDePixeles];   //pixeles
+        BufferedImage bImagen = creaBufferedImage(imagenBase);
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = bImagen.getRGB(i,j);
+                Color color = new Color(gris, true);
+
+                lut[i*(h-1) + j] = color.getGreen();
+            }
+        }
+
+        return lut;
     }
 }

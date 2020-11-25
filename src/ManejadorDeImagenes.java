@@ -5,7 +5,9 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.text.DecimalFormat;
 import javax.swing.*;
 
 /**
@@ -16,16 +18,22 @@ import javax.swing.*;
  */
 public class ManejadorDeImagenes {
     ProcesadorDeImagenes procesador;
+    int min, max, xPixel, yPixel, grisPixel;
+    double brillo, contraste;
     double[] histograma;
     double[] histogramaAcumulado;
     int[] lut;
     boolean editado = false;
 
     public ManejadorDeImagenes() {
-
         procesador = new ProcesadorDeImagenes();
         histograma = new double[256];
         histogramaAcumulado = new double[256];
+        min = 256;
+        max = -1;
+        xPixel = -1;
+        yPixel = -1;
+        grisPixel = -1;
     }
     /**
      * @Desc Método que lleva a cabo la carga de un archivo de imagen
@@ -93,28 +101,14 @@ public class ManejadorDeImagenes {
             estado = false;
         return estado;
     }
+
     /**
      * @Desc Método que lleva a cabo la transformación de la imagen cargada a una imagen de escala de grises y la despliega en pantalla
-     * @param lienzo
+     * @param
      */
-    public void muestraEscalaDeGrises(PanelDeImagen lienzo)
+    public void muestraEscalaDeGrises()
     {
         lut = procesador.escalaDeGrises(lut);
-        lienzo.estableceImagen(procesador.devuelveImagenModificada());
-        lienzo.repaint();
-
-    }
-    /**
-     * @Desc Método que lleva a cabo la modificación del brillo de la imagen cargada y despliega la imagen resultante en pantalla
-     * @param lienzo
-     * @param valor
-     */
-    public void muestraBrillo(PanelDeImagen lienzo, int valor)
-    {
-        procesador.modificaBrillo(valor);
-        lienzo.estableceImagen(procesador.devuelveImagenModificada());
-        lienzo.repaint();
-        editado = true;
     }
 
     /**
@@ -129,11 +123,16 @@ public class ManejadorDeImagenes {
     }
 
     public void actualizarHistogramas(JFreeChart hist, JFreeChart histAcumulado) {
-        BufferedImage imagen = procesador.creaBufferedImage(procesador.devuelveImagenModificada());
         int gris;
+        double sumaIntensidades = 0;
+        resetearHistograma();
+
         for (int i = 0; i < lut.length; i++) {
             gris = lut[i];
             histograma[gris] = histograma[gris] +1;
+            sumaIntensidades = sumaIntensidades + (double) gris;
+            if (gris < min) min = gris;
+            if (gris > max) max = gris;
         }
 
         double sum = 0;
@@ -151,13 +150,94 @@ public class ManejadorDeImagenes {
             histogramaAcumulado[i] = sum;
             set2.add(i, histogramaAcumulado[i]);
         }
+        brillo = sumaIntensidades / (double)lut.length;
+        contraste = calcularContraste(brillo);
 
         dataset1.addSeries(set1);
         hist.getXYPlot().setDataset(dataset1);
 
         dataset2.addSeries(set2);
         histAcumulado.getXYPlot().setDataset(dataset2);
-
     }
 
+    private void resetearHistograma() {
+        for (int i = 0; i < histograma.length; i++) {
+            histograma[i] = 0;
+            histogramaAcumulado[i] = 0;
+        }
+    }
+
+    private double calcularContraste(double brillo) {
+        double suma = 0;
+        for (int i = 0; i < lut.length; i++) {
+            suma = suma + Math.pow((lut[i] - brillo), 2);
+        }
+
+        return Math.sqrt(suma / lut.length);
+    }
+
+    public int confirmar(PanelSwing panel) {
+        panel.esqueInf2.show(panel.panelDerecho, "carta3");
+
+        Image imgPost = procesador.devuelveImagenModificada();
+
+        panel.lienzo2.estableceImagen(imgPost);
+        panel.lienzo2.repaint();
+        int res = JOptionPane.showConfirmDialog(null, "Quieres confirmar esta transformación?", "Confirmar transformación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (res == 0 ) {
+            panel.lienzo.estableceImagen(imgPost);
+            panel.lienzo.repaint();
+            procesador.estableceImagen(imgPost, procesador.devuelveTipo());
+        }
+
+        panel.esqueInf2.show(panel.panelDerecho, "carta1");
+
+        return res;
+    }
+
+    public boolean seleccionarSubimagen(PanelSwing panel) throws Exception {
+        int firstPointX, firstPointY, secondPointX, secondPointY;
+        try {
+            firstPointX = Integer.parseInt(panel.supX.getText());
+            firstPointY = Integer.parseInt(panel.supY.getText());
+            secondPointX = Integer.parseInt(panel.subX.getText());
+            secondPointY = Integer.parseInt(panel.subY.getText());
+            return procesador.seleccionarSubImagen(firstPointX, firstPointY, secondPointX, secondPointY, panel);
+        } catch (Exception e) {
+            panel.errorLabel.setText("ERROR. Introduce coordenadas positivas, y procura que el primer punto esté por encima y a la izquierda del segundo");
+            return false;
+        }
+    }
+
+    public void actualizarDatos(PanelSwing panel) {
+        Image imagen = procesador.devuelveImagenBase();
+        lut = procesador.actualizarLUT(lut);
+        DecimalFormat df = new DecimalFormat("#.###");
+
+        actualizarHistogramas(panel.hist, panel.histAcumulado);
+        panel.panelDerecho.repaint();
+
+        panel.tipoArchivo.setText(procesador.tipoDeImagen);
+        panel.tamanoImagen.setText(imagen.getHeight(null) + " X " + imagen.getWidth(null));
+        panel.rangoValores.setText("Min: " + min + " Max: " + max);
+        panel.brilloImagen.setText(String.valueOf(df.format(brillo)));
+        panel.contrasteImagen.setText(String.valueOf(df.format(contraste)));
+    }
+
+    public void pixelSeleccionado(MouseEvent e, PanelSwing panel) {
+        xPixel = e.getX();
+        yPixel = e.getY();
+        BufferedImage imagen = procesador.creaBufferedImage(procesador.devuelveImagenBase());
+
+        if(xPixel <= imagen.getWidth() && yPixel <= imagen.getHeight()) {
+            int gris = imagen.getRGB(xPixel, yPixel);
+            grisPixel = new Color(gris, true).getBlue();
+
+            panel.pixelClicado.setText("Posicion: (" + xPixel + "," + yPixel + "). Gris: " + grisPixel);
+        } else {
+            panel.pixelClicado.setText("Pixel fuera de la imagen");
+        }
+    }
 }

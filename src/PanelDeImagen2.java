@@ -9,7 +9,7 @@ import javax.swing.JScrollPane;
  * @author Beto González
  *
  */
-public class PanelDeImagen extends JPanel{
+public class PanelDeImagen2 extends JPanel{
     static final long serialVersionUID=10000;
     Image img;
     Dimension tamaño;
@@ -17,7 +17,7 @@ public class PanelDeImagen extends JPanel{
     /**
      * @Desc Constructor de la clase
      */
-    PanelDeImagen()
+    PanelDeImagen2()
     {
         setBackground(Color.white);
     }
@@ -47,31 +47,6 @@ public class PanelDeImagen extends JPanel{
         super.paintComponent(g);
         if (img != null)
         {
-            if(base != null)
-            {
-                setSize(new Dimension(base.getWidth()-10,base.getHeight()-10));
-                setPreferredSize(new Dimension(base.getWidth()-10,base.getHeight()-10));
-            }
-            tamaño = new Dimension(getWidth(),getHeight());
-            int x = tamaño.width - img.getWidth(this);
-            while (x < 0)
-            {
-                tamaño.setSize(tamaño.width+1, tamaño.height);
-                x = tamaño.width - img.getWidth(this);
-            }
-
-            int y = tamaño.height - img.getHeight(this);
-            while (y < 0)
-            {
-                tamaño.setSize(tamaño.width, tamaño.height+1);
-                y = tamaño.height - img.getHeight(this);
-            }
-
-            if(!getSize().equals(tamaño))
-            {
-                setSize(tamaño);
-                setPreferredSize(tamaño);
-            }
             g.drawImage(img, base.getX(), base.getY(), this);
         }
     }
