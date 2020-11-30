@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import javax.swing.*;
 
 /**
@@ -210,10 +211,13 @@ public class ManejadorDeImagenes {
             return false;
         }
     }
+    public void actualizarLUT() {
+        lut = procesador.actualizarLUT(lut);
+    }
 
     public void actualizarDatos(PanelSwing panel) {
         Image imagen = procesador.devuelveImagenBase();
-        lut = procesador.actualizarLUT(lut);
+        //lut = procesador.actualizarLUT(lut);
         DecimalFormat df = new DecimalFormat("#.###");
 
         actualizarHistogramas(panel.hist, panel.histAcumulado);
@@ -238,6 +242,77 @@ public class ManejadorDeImagenes {
             panel.pixelClicado.setText("Posicion: (" + xPixel + "," + yPixel + "). Gris: " + grisPixel);
         } else {
             panel.pixelClicado.setText("Pixel fuera de la imagen");
+        }
+    }
+
+    public boolean ajustarBrilloContraste(PanelSwing panel) {
+        try {
+            double brilloDeseado = Double.parseDouble(panel.brilloArea.getText());
+            double contrasteDeseado = Double.parseDouble(panel.contrasteArea.getText());
+            if (brilloDeseado < 0 || brilloDeseado > 255 || contrasteDeseado < 0 || contrasteDeseado > 255) {
+                panel.errorLabel.setText("ERROR. Introduce valores positivos comprendidos entre 0 y 255");
+                return false;
+            }
+            double A = contrasteDeseado / contraste;
+            double B = brilloDeseado - (A * brillo);
+
+            lut = procesador.ajustarBrilloContraste(A, B, lut);
+            panel.errorLabel.setText("");
+            return true;
+        } catch (Exception e){
+            panel.errorLabel.setText("ERROR. Introduce valores positivos comprendidos entre 0 y 255");
+            return false;
+        }
+    }
+
+    public void escribirBrilloContraste(PanelSwing panel) {
+        DecimalFormat df = new DecimalFormat("#.###");
+
+        panel.brilloImagen2.setText(String.valueOf(df.format(brillo)));
+        panel.contrasteImagen2.setText(String.valueOf(df.format(contraste)));
+    }
+
+    public boolean ajustarTramos(PanelSwing panel) {
+        try {
+            return procesador.ajustarTramos(panel.inicio, panel.coordenadas, panel, lut);
+        } catch (Exception e) {
+            panel.errorLabel.setText("Introduce coordenadas válidas");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean definirTramos(PanelSwing panel) {
+        try {
+            int i;
+            int numTramos = Integer.parseInt(panel.numTramos.getText());
+            if (numTramos <= 0 || numTramos > 10) {
+                panel.errorLabel.setText("Introduce un numero de tramos mayor que 0 y menor que 10");
+                return false;
+            }
+
+            panel.panelAjusteTramos2.add(new JLabel("Introduce la coordenada Y desde donde empezar el ajuste: "));
+            panel.panelAjusteTramos2.add(panel.inicio);
+
+            for (i = 0; i < numTramos -1 ; i++) {
+                panel.panelAjusteTramos2.add(new JLabel("Coordenada X del  final del tramo " + (i+1) + ":"));
+                panel.coordenadas.add(new JTextArea(1, 4));
+                panel.panelAjusteTramos2.add(panel.coordenadas.get(i*2));
+                panel.panelAjusteTramos2.add(new JLabel("Parámetro A del tramo " + (i+1) + ":"));
+                panel.coordenadas.add(new JTextArea(1, 4));
+                panel.panelAjusteTramos2.add(panel.coordenadas.get((i*2 + 1)));
+            }
+            System.out.println(i);
+            panel.panelAjusteTramos2.add(new JLabel("Parámetro A del tramo " + i+1 + ":"));
+            panel.coordenadas.add(new JTextArea(1, 4));
+            panel.panelAjusteTramos2.add(panel.coordenadas.get((i*2)));
+            panel.panelAjusteTramos2.add(panel.aceptar4);
+            panel.panelAjusteTramos2.add(panel.errorLabel);
+            return true;
+        } catch (Exception e) {
+            panel.errorLabel.setText("Introduce un numero de tramos mayor que 0 y menor que 10");
+            e.printStackTrace();
+            return false;
         }
     }
 }

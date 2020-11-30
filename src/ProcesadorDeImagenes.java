@@ -3,7 +3,10 @@ import java.awt.image.*;
 import java.io.IOException;
 import java.io.File;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
+import javax.swing.*;
+
 /**
  * @Desc Clase que implementa el procesamiento básico de imágenes digitales 
  * @author Beto González
@@ -191,5 +194,73 @@ public class ProcesadorDeImagenes extends Canvas {
         }
 
         return lut;
+    }
+
+    public void reDibujarImagen(int[] lut) {
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this); //Alto
+        int gris;
+        Color newColor;
+        BufferedImage bImagen = creaBufferedImage(devuelveImagenBase());
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = lut[i*(h-1) + j];
+                newColor = new Color(gris, gris, gris);
+                bImagen.setRGB(i, j, newColor.getRGB());
+            }
+        }
+        imagenModificada = bImagen;
+    }
+    public int[] ajustarBrilloContraste(double A, double B, int[] lut) {
+        int gris;
+
+        for (int i = 0; i < lut.length; i++) {
+            gris = (int) (A * lut[i] + B);
+            if (gris > 255) gris = 255;
+            if (gris < 0 ) gris = 0;
+            lut[i] = gris;
+        }
+        reDibujarImagen(lut);
+        return lut;
+    }
+
+    public boolean ajustarTramos(JTextArea inicio, ArrayList<JTextArea> coordenadas, PanelSwing panel, int[] lut) {
+        double[] cambio = new double[256];
+        double A;
+        int i;
+        int ind = 0;
+        int altura = Integer.parseInt(inicio.getText());
+
+        cambio[ind] = altura;
+        ind ++;
+        for (i = 0; i < ((coordenadas.size()-1) / 2); i++) {
+            int x = Integer.parseInt(coordenadas.get(i*2).getText());
+            A = Double.parseDouble(coordenadas.get(i*2 +1).getText());
+            if (A < 0) {
+                panel.errorLabel.setText("El parámetro A debe ser mayor que 0 para que la función sea monótona creciente");
+                return false;
+            }
+            while (ind < x) {
+                cambio[ind] = cambio[ind-1] + A;
+                ind++;
+            }
+        }
+
+        A = Double.parseDouble(coordenadas.get(i*2).getText());
+
+        while (ind < cambio.length) {
+            cambio[ind] = cambio[ind -1] + A;
+            ind++;
+        }
+
+        for(i = 0; i < lut.length; i++) {
+            lut[i] = (int) (cambio[lut[i]]);
+            if (lut[i] > 255) lut[i] = 255;
+            if (lut[i] < 0 ) lut[i] = 0;
+        }
+
+        reDibujarImagen(lut);
+        return true;
     }
 }

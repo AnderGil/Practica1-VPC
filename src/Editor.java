@@ -1,13 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-/**
- * Descripción: Esta clase implementa un editor básico de imágenes .jpg y .gif,
- * utilizando componentes Swing y una serie de clases para el manejo y procesamiento de imagenes digitales.
- * @author Beto González
- * @version 1.0
- * @category Multimedia
- */
+
 public class Editor extends JFrame{
     static final long serialVersionUID=10000;
     private PanelSwing panel;
@@ -25,7 +19,12 @@ public class Editor extends JFrame{
         panel.salir.addActionListener(controlador);
         panel.escala.addActionListener(controlador);
         panel.subimagen.addActionListener(controlador);
-        panel.aceptar.addActionListener(controlador);
+        panel.ajusteBrilloContraste.addActionListener(controlador);
+        panel.ajusteTramos.addActionListener(controlador);
+        panel.aceptar1.addActionListener(controlador);
+        panel.aceptar2.addActionListener(controlador);
+        panel.aceptar3.addActionListener(controlador);
+        panel.aceptar4.addActionListener(controlador);
         panel.datos.addActionListener(controlador);
         panel.histogramas.addActionListener(controlador);
         contentPane.add(panel);

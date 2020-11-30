@@ -6,6 +6,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.Range;
 
 import java.awt.*;
+import java.util.ArrayList;
 import javax.swing.*;
 
 /**
@@ -19,12 +20,13 @@ public class PanelSwing extends JPanel {
     JFreeChart hist, histAcumulado;
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion, menuVer;
-    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos;
+    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos, ajusteBrilloContraste, ajusteTramos;
     JScrollPane panelDespl, panelDespl2;
-    JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, contrasteImagen, pixelClicado, errorLabel;
-    JTextArea supX, supY, subX, subY;
-    JButton aceptar;
-    JPanel panelBajo, panelDatos, panelVacio, panelHistograma, panelDerecho, panelCentral, panelSubImagen;
+    JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
+    ArrayList<JTextArea> coordenadas;
+    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio;
+    JButton aceptar1, aceptar2, aceptar3, aceptar4;
+    JPanel panelBajo, panelDatos, panelVacio, panelHistograma, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
     int altura = 80;
     Image imagen;
     Image imgAux;
@@ -56,6 +58,10 @@ public class PanelSwing extends JPanel {
         salir = menuArchivo.add("Salir");
         escala = menuEdicion.add("Escala de Grises");
         subimagen = menuEdicion.add("Seleccionar subimagen");
+        ajusteBrilloContraste = menuEdicion.add("Ajuste lineal de brillo y contraste");
+        ajusteTramos = menuEdicion.add("Ajuste lineal por tramos");
+        ajusteBrilloContraste.setEnabled(false);
+        ajusteTramos.setEnabled(false);
         escala.setEnabled(false);
         subimagen.setEnabled(false);
         histogramas = menuVer.add("Histogramas");
@@ -75,15 +81,10 @@ public class PanelSwing extends JPanel {
      */
     private void creapanelCentral()
     {
-        esqueInf3 = new CardLayout();
-        panelCentral = new JPanel(esqueInf3);
-
         lienzo = new PanelDeImagen();
         panelDespl = new JScrollPane(lienzo);
         lienzo.estableceBase(panelDespl);
-        panelCentral.add("carta1", panelDespl);
-
-        add("Center", panelCentral);
+        add("Center", panelDespl);
     }
 
     /**
@@ -125,7 +126,7 @@ public class PanelSwing extends JPanel {
         supY = new JTextArea(1, 4);
         subX = new JTextArea(1, 4);
         subY = new JTextArea(1, 4);
-        aceptar = new JButton("Aceptar");
+        aceptar1 = new JButton("Aceptar");
         panelSubImagen = new JPanel(new FlowLayout());
         panelSubImagen.add(new JLabel("Introduce las coordenadas de las esquinas de la subimagen: "));
         panelSubImagen.add(new JLabel("X de esquina sup izq:"));
@@ -136,12 +137,45 @@ public class PanelSwing extends JPanel {
         panelSubImagen.add(subX);
         panelSubImagen.add(new JLabel("Y de esquina inf der:"));
         panelSubImagen.add(subY);
-        panelSubImagen.add(aceptar);
+        panelSubImagen.add(aceptar1);
         panelSubImagen.add(errorLabel);
+
+        aceptar2 = new JButton("Aceptar");
+        brilloImagen2 = new JLabel();
+        contrasteImagen2 = new JLabel();
+        brilloArea = new JTextArea(1, 4);
+        contrasteArea = new JTextArea(1, 4);
+        panelBrilloContraste = new JPanel(new FlowLayout());
+        panelBrilloContraste.add(new JLabel("Brillo actual: "));
+        panelBrilloContraste.add(brilloImagen2);
+        panelBrilloContraste.add(new JLabel("Contraste actual: "));
+        panelBrilloContraste.add(contrasteImagen2);
+        panelBrilloContraste.add(new JLabel("Introduce el brillo deseado: "));
+        panelBrilloContraste.add(brilloArea);
+        panelBrilloContraste.add(new JLabel("Introduce el contraste deseado: "));
+        panelBrilloContraste.add(contrasteArea);
+        panelBrilloContraste.add(aceptar2);
+        panelBrilloContraste.add(errorLabel);
+
+        panelAjusteTramos = new JPanel(new FlowLayout());
+        aceptar3 = new JButton("Aceptar");
+        numTramos = new JTextArea(1, 4);
+        panelAjusteTramos.add(new JLabel("Introduce el número de tramos (1-10): "));
+        panelAjusteTramos.add(numTramos);
+        panelAjusteTramos.add(aceptar3);
+
+        aceptar4 = new JButton("Aceptar");
+
+        inicio = new JTextArea(1, 4);
+        coordenadas = new ArrayList<>();
+        panelAjusteTramos2 = new JPanel(new FlowLayout());
 
         panelBajo.add("carta1", panelVacio);
         panelBajo.add("carta2", panelDatos);
         panelBajo.add("carta3", panelSubImagen);
+        panelBajo.add("carta4", panelBrilloContraste);
+        panelBajo.add("carta5", panelAjusteTramos);
+        panelBajo.add("carta6", panelAjusteTramos2);
         esqueInf1.show(panelBajo, "carta1");
         this.add("South",panelBajo);
     }
