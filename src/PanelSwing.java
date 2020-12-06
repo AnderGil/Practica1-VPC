@@ -20,7 +20,7 @@ public class PanelSwing extends JPanel {
     JFreeChart hist, histAcumulado;
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion, menuVer;
-    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos, ajusteBrilloContraste, ajusteTramos;
+    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma;
     JScrollPane panelDespl, panelDespl2;
     JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
     ArrayList<JTextArea> coordenadas;
@@ -60,10 +60,14 @@ public class PanelSwing extends JPanel {
         subimagen = menuEdicion.add("Seleccionar subimagen");
         ajusteBrilloContraste = menuEdicion.add("Ajuste lineal de brillo y contraste");
         ajusteTramos = menuEdicion.add("Ajuste lineal por tramos");
+        ecualizarHistograma = menuEdicion.add("Ecualizar histograma");
+        especificarHistograma = menuEdicion.add("Especificar histograma");
         ajusteBrilloContraste.setEnabled(false);
         ajusteTramos.setEnabled(false);
         escala.setEnabled(false);
         subimagen.setEnabled(false);
+        ecualizarHistograma.setEnabled(false);
+        especificarHistograma.setEnabled(false);
         histogramas = menuVer.add("Histogramas");
         histogramas.setEnabled(false);
         datos = menuVer.add("Datos de la imagen");

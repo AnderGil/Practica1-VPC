@@ -51,17 +51,20 @@ public class ProcesadorDeImagenes extends Canvas {
      * @Desc Método que convierte la imagen base contenida en una imagen a escala de grises
      * @return Verdadero si todo salió bien, falso en caso de error
      * @param
-     * @param lut
+     * @param
      */
-    public int[] escalaDeGrises(int[] lut)
+    public int[] escalaDeGrises()
     {
-        int p, rojo, verde, azul, gris;
+        int p, rojo, verde, azul, gris, totalDePixeles, a, h;
         Color newColor;
-        int a = imagenBase.getWidth(this);  //Ancho
-        int h = imagenBase.getHeight(this); //Alto
-        int totalDePixeles = a * h;
+        BufferedImage bImagen;
+        int[] lut;   //pixeles
+        a = imagenBase.getWidth(this);  //Ancho
+        h = imagenBase.getHeight(this); //Alto
+        bImagen = creaBufferedImage(imagenBase);
+
+        totalDePixeles = a * h;
         lut = new int[totalDePixeles];   //pixeles
-        BufferedImage bImagen = creaBufferedImage(imagenBase);
 
         for (int i = 0; i < a; i++) {
             for (int j = 0; j < h; j++) {
@@ -176,12 +179,12 @@ public class ProcesadorDeImagenes extends Canvas {
         }
     }
 
-    public int[] actualizarLUT(int[] lut) {
+    public int[] actualizarLUT() {
         int gris;
         int a = imagenBase.getWidth(this);  //Ancho
         int h = imagenBase.getHeight(this); //Alto
         int totalDePixeles = a * h;
-        lut = new int[totalDePixeles];   //pixeles
+        int[] lut = new int[totalDePixeles];   //pixeles
         BufferedImage bImagen = creaBufferedImage(imagenBase);
 
         for (int i = 0; i < a; i++) {
@@ -262,5 +265,73 @@ public class ProcesadorDeImagenes extends Canvas {
 
         reDibujarImagen(lut);
         return true;
+    }
+
+    public double[] especificarHistograma(String ruta, double[] cdf) throws InterruptedException {
+        Image imageRef = Toolkit.getDefaultToolkit().getImage(ruta);
+        MediaTracker tracker = new MediaTracker(this);
+        int i, j;
+        double[] T = new double[cdf.length];
+        int[] lutRef;
+
+        tracker.addImage(imageRef, 0);
+        tracker.waitForID(0);
+
+        lutRef = getLUT(creaBufferedImage(imageRef));
+
+        double[] cdfRef = calcularCdf(lutRef, cdf.length);
+
+        for (i=0; i< cdf.length; i++) {
+            j = cdf.length-1;
+            while ((j > 0) && (cdf[i] <= cdfRef[j])) {
+                T[i] = j;
+                j--;
+            }
+        }
+
+        return T;
+    }
+
+    private int[] getLUT (BufferedImage img) {
+        int p, rojo, verde, azul, gris, totalDePixeles, a, h;
+        int[] lut;   //pixeles
+
+        a = img.getWidth(this);  //Ancho
+        h = img.getHeight(this); //Alto
+
+        totalDePixeles = a * h;
+        lut = new int[totalDePixeles];   //pixeles
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                p = img.getRGB(i,j);
+                Color color = new Color(p, true);
+                rojo = color.getRed();
+                verde = color.getGreen();
+                azul= color.getBlue();
+
+                gris = (int) (0.299*rojo + 0.517*verde + 0.114*azul);
+                lut[i*(h-1) + j] = gris;
+            }
+        }
+        return lut;
+    }
+
+    private double[] calcularCdf(int[] lutRef, int length) {
+        double sum = 0;
+        double[] cdf = new double[length];
+        double[] hist = new double[length];
+
+        for (int i = 0; i < lutRef.length; i++) {
+            hist[lutRef[i]] = hist[lutRef[i]] +1;
+        }
+
+        for (int i = 0; i < length; i++) {
+            sum = sum + hist[i];
+            cdf[i] = sum / lutRef.length;
+            System.out.println(cdf[i]);
+        }
+
+        return cdf;
     }
 }

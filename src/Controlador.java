@@ -48,8 +48,11 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.esqueInf2.show(panel.panelDerecho, "carta1");
                         panel.histogramas.setEnabled(false);
                         panel.ajusteBrilloContraste.setEnabled(false);
+                        panel.ajusteTramos.setEnabled(false);
                         panel.datos.setEnabled(false);
                         panel.subimagen.setEnabled(false);
+                        panel.ecualizarHistograma.setEnabled(false);
+                        panel.especificarHistograma.setEnabled(false);
                     }
                 }
                 case "Guardar" -> manejador.guardaArchivoDeImagen(panel);
@@ -68,6 +71,8 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.subimagen.setEnabled(true);
                         panel.ajusteBrilloContraste.setEnabled(true);
                         panel.ajusteTramos.setEnabled(true);
+                        panel.ecualizarHistograma.setEnabled(true);
+                        panel.especificarHistograma.setEnabled(true);
                     }
                 }
                 case "Histogramas" -> panel.esqueInf2.show(panel.panelDerecho, "carta2");
@@ -80,6 +85,26 @@ public class Controlador implements ActionListener, MouseListener {
                 case "Ajuste lineal por tramos" -> {
                     panel.esqueInf1.show(panel.panelBajo, "carta5");
                     mode = "definirTramos";
+                }
+                case "Ecualizar histograma" -> {
+                    manejador.ecualizarHistograma();
+                    int confirmado = manejador.confirmar(panel);
+                    if (confirmado == 0) {
+                        manejador.actualizarDatos(panel);
+                        panel.esqueInf2.show(panel.panelDerecho, "carta2");
+                    }
+                }
+                case "Especificar histograma" -> {
+                    try {
+                        manejador.especificarHistograma();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    int confirmado = manejador.confirmar(panel);
+                    if (confirmado == 0) {
+                        manejador.actualizarDatos(panel);
+                        panel.esqueInf2.show(panel.panelDerecho, "carta2");
+                    }
                 }
             }
         } else if (source instanceof JButton) {

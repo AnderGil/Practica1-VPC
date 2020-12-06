@@ -20,16 +20,18 @@ import javax.swing.*;
 public class ManejadorDeImagenes {
     ProcesadorDeImagenes procesador;
     int min, max, xPixel, yPixel, grisPixel;
+    int M = 256;
     double brillo, contraste;
-    double[] histograma;
-    double[] histogramaAcumulado;
+    double[] histograma, histogramaAcumulado, cdf, pdf;
     int[] lut;
     boolean editado = false;
 
     public ManejadorDeImagenes() {
         procesador = new ProcesadorDeImagenes();
-        histograma = new double[256];
-        histogramaAcumulado = new double[256];
+        histograma = new double[M];
+        histogramaAcumulado = new double[M];
+        cdf = new double[M];
+        pdf = new double[M];
         min = 256;
         max = -1;
         xPixel = -1;
@@ -109,7 +111,7 @@ public class ManejadorDeImagenes {
      */
     public void muestraEscalaDeGrises()
     {
-        lut = procesador.escalaDeGrises(lut);
+        lut = procesador.escalaDeGrises();
     }
 
     /**
@@ -149,6 +151,8 @@ public class ManejadorDeImagenes {
 
             sum = sum + histograma[i];
             histogramaAcumulado[i] = sum;
+            cdf[i] = histogramaAcumulado[i] / lut.length;
+            pdf[i] = histograma[i] / lut.length;
             set2.add(i, histogramaAcumulado[i]);
         }
         brillo = sumaIntensidades / (double)lut.length;
@@ -212,12 +216,11 @@ public class ManejadorDeImagenes {
         }
     }
     public void actualizarLUT() {
-        lut = procesador.actualizarLUT(lut);
+        lut = procesador.actualizarLUT();
     }
 
     public void actualizarDatos(PanelSwing panel) {
         Image imagen = procesador.devuelveImagenBase();
-        //lut = procesador.actualizarLUT(lut);
         DecimalFormat df = new DecimalFormat("#.###");
 
         actualizarHistogramas(panel.hist, panel.histAcumulado);
@@ -310,9 +313,49 @@ public class ManejadorDeImagenes {
             panel.panelAjusteTramos2.add(panel.errorLabel);
             return true;
         } catch (Exception e) {
-            panel.errorLabel.setText("Introduce un numero de tramos mayor que 0 y menor que 10");
+            panel.errorLabel.setText("Introduce un número de tramos mayor que 0 y menor que 10");
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void ecualizarHistograma() {
+        int i;
+        double K;
+        int newValue;
+        K = lut.length / histograma.length;
+
+        for (i=0; i< lut.length; i++) {
+            newValue = (int) Math.round((histogramaAcumulado[lut[i]] / K) - 1);
+            if (newValue < 0)
+                newValue = 0;
+            lut[i] = newValue;
+        }
+
+        procesador.reDibujarImagen(lut);
+    }
+
+    public void especificarHistograma() throws InterruptedException {
+        double[] T;
+        int i;
+
+        JFileChooser selector = new JFileChooser();
+        selector.addChoosableFileFilter(new FiltroDeArchivo("TIFF", "archivos TIFF"));
+        String lista[] = {"jpeg","jpg"};
+        selector.addChoosableFileFilter(new FiltroDeArchivo(lista,"Archivos JPEG"));
+        selector.setDialogTitle("Selecciona la imagen cuyo histograma se quiere obtener");
+        selector.setDialogType(JFileChooser.OPEN_DIALOG);
+        int resultado = selector.showOpenDialog(null);
+        if(resultado == JFileChooser.APPROVE_OPTION) {
+            String ruta = selector.getSelectedFile().getPath();
+            T = procesador.especificarHistograma(ruta, cdf);
+
+            for (i = 0; i < lut.length; i++) {
+                //System.out.println(T[lut[i]]);
+                lut[i] = (int) T[lut[i]];
+            }
+
+            procesador.reDibujarImagen(lut);
         }
     }
 }

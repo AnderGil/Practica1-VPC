@@ -21,6 +21,8 @@ public class Editor extends JFrame{
         panel.subimagen.addActionListener(controlador);
         panel.ajusteBrilloContraste.addActionListener(controlador);
         panel.ajusteTramos.addActionListener(controlador);
+        panel.ecualizarHistograma.addActionListener(controlador);
+        panel.especificarHistograma.addActionListener(controlador);
         panel.aceptar1.addActionListener(controlador);
         panel.aceptar2.addActionListener(controlador);
         panel.aceptar3.addActionListener(controlador);
