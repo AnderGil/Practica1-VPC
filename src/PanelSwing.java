@@ -20,13 +20,13 @@ public class PanelSwing extends JPanel {
     JFreeChart hist, histAcumulado;
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion, menuVer;
-    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma;
+    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
     JScrollPane panelDespl, panelDespl2;
     JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
     ArrayList<JTextArea> coordenadas;
-    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio;
-    JButton aceptar1, aceptar2, aceptar3, aceptar4;
-    JPanel panelBajo, panelDatos, panelVacio, panelHistograma, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
+    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma;
+    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5;
+    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelHistograma, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
     int altura = 80;
     Image imagen;
     Image imgAux;
@@ -62,12 +62,14 @@ public class PanelSwing extends JPanel {
         ajusteTramos = menuEdicion.add("Ajuste lineal por tramos");
         ecualizarHistograma = menuEdicion.add("Ecualizar histograma");
         especificarHistograma = menuEdicion.add("Especificar histograma");
+        gamma = menuEdicion.add("Corrección Gamma");
         ajusteBrilloContraste.setEnabled(false);
         ajusteTramos.setEnabled(false);
         escala.setEnabled(false);
         subimagen.setEnabled(false);
         ecualizarHistograma.setEnabled(false);
         especificarHistograma.setEnabled(false);
+        gamma.setEnabled(false);
         histogramas = menuVer.add("Histogramas");
         histogramas.setEnabled(false);
         datos = menuVer.add("Datos de la imagen");
@@ -174,12 +176,21 @@ public class PanelSwing extends JPanel {
         coordenadas = new ArrayList<>();
         panelAjusteTramos2 = new JPanel(new FlowLayout());
 
+        aceptar5 = new JButton("Aceptar");
+        panelGamma = new JPanel(new FlowLayout());
+        coefGamma = new JTextArea(1, 4);
+        panelGamma.add(new JLabel("Introduce el coeficiente gamma: "));
+        panelGamma.add(coefGamma);
+        panelGamma.add(aceptar5);
+
+
         panelBajo.add("carta1", panelVacio);
         panelBajo.add("carta2", panelDatos);
         panelBajo.add("carta3", panelSubImagen);
         panelBajo.add("carta4", panelBrilloContraste);
         panelBajo.add("carta5", panelAjusteTramos);
         panelBajo.add("carta6", panelAjusteTramos2);
+        panelBajo.add("carta7", panelGamma);
         esqueInf1.show(panelBajo, "carta1");
         this.add("South",panelBajo);
     }

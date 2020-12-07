@@ -23,10 +23,12 @@ public class Editor extends JFrame{
         panel.ajusteTramos.addActionListener(controlador);
         panel.ecualizarHistograma.addActionListener(controlador);
         panel.especificarHistograma.addActionListener(controlador);
+        panel.gamma.addActionListener(controlador);
         panel.aceptar1.addActionListener(controlador);
         panel.aceptar2.addActionListener(controlador);
         panel.aceptar3.addActionListener(controlador);
         panel.aceptar4.addActionListener(controlador);
+        panel.aceptar5.addActionListener(controlador);
         panel.datos.addActionListener(controlador);
         panel.histogramas.addActionListener(controlador);
         contentPane.add(panel);

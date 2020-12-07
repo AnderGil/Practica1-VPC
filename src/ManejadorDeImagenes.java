@@ -358,4 +358,22 @@ public class ManejadorDeImagenes {
             procesador.reDibujarImagen(lut);
         }
     }
+
+    public boolean correccionGamma(PanelSwing panel) {
+        try {
+            double[] a = new double[lut.length];
+            double b = Double.parseDouble(panel.coefGamma.getText());
+            for (int i = 0; i < lut.length; i++) {
+                a[i] = (double)lut[i] / (double)(M-1);
+                a[i] = Math.pow(a[i], b);
+                lut[i] = (int) (a[i] * (M-1));
+            }
+
+            procesador.reDibujarImagen(lut);
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

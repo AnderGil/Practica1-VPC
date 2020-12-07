@@ -53,6 +53,7 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.subimagen.setEnabled(false);
                         panel.ecualizarHistograma.setEnabled(false);
                         panel.especificarHistograma.setEnabled(false);
+                        panel.gamma.setEnabled(false);
                     }
                 }
                 case "Guardar" -> manejador.guardaArchivoDeImagen(panel);
@@ -73,6 +74,7 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.ajusteTramos.setEnabled(true);
                         panel.ecualizarHistograma.setEnabled(true);
                         panel.especificarHistograma.setEnabled(true);
+                        panel.gamma.setEnabled(true);
                     }
                 }
                 case "Histogramas" -> panel.esqueInf2.show(panel.panelDerecho, "carta2");
@@ -105,6 +107,10 @@ public class Controlador implements ActionListener, MouseListener {
                         manejador.actualizarDatos(panel);
                         panel.esqueInf2.show(panel.panelDerecho, "carta2");
                     }
+                }
+                case "Corrección Gamma" -> {
+                    panel.esqueInf1.show(panel.panelBajo, "carta7");
+                    mode = "gamma";
                 }
             }
         } else if (source instanceof JButton) {
@@ -148,6 +154,16 @@ public class Controlador implements ActionListener, MouseListener {
                     if (confirmado == 0) {
                         panel.panelAjusteTramos2.removeAll();
                         panel.coordenadas.clear();
+                        manejador.actualizarDatos(panel);
+                        panel.esqueInf1.show(panel.panelBajo, "carta1");
+                    }
+                }
+            }
+            else if (i.getText().equals("Aceptar") && mode.compareTo("gamma") == 0) {
+                boolean noError = manejador.correccionGamma(panel);
+                if (noError) {
+                    int confirmado = manejador.confirmar(panel);
+                    if (confirmado == 0) {
                         manejador.actualizarDatos(panel);
                         panel.esqueInf1.show(panel.panelBajo, "carta1");
                     }
