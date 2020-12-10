@@ -11,22 +11,21 @@ import javax.swing.*;
 
 /**
  * @Desc Clase utilizada para crear los componentes de la interfaz gráfica de la aplicación
- * @author Beto González
  *
  */
 public class PanelSwing extends JPanel {
     static final long serialVersionUID = 10000;
     String nombreArchivo, ruta;
-    JFreeChart hist, histAcumulado;
+    JFreeChart hist, histAcumulado, histDiferencia;
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion, menuVer;
-    JMenuItem abrir, guardar, salir, escala, histogramas, subimagen, datos, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
+    JMenuItem abrir, guardar, salir, escala, histogramas, histogramaDif, subimagen, datos, diferenciaImagenes, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
     JScrollPane panelDespl, panelDespl2;
     JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
     ArrayList<JTextArea> coordenadas;
-    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma;
-    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5;
-    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelHistograma, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
+    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma, umbral;
+    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5, aceptar6;
+    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelHistograma, panelHistogramaDiferencia, panelUmbral, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
     int altura = 80;
     Image imagen;
     Image imgAux;
@@ -63,6 +62,7 @@ public class PanelSwing extends JPanel {
         ecualizarHistograma = menuEdicion.add("Ecualizar histograma");
         especificarHistograma = menuEdicion.add("Especificar histograma");
         gamma = menuEdicion.add("Corrección Gamma");
+        diferenciaImagenes = menuEdicion.add("Diferencia entre dos imagenes");
         ajusteBrilloContraste.setEnabled(false);
         ajusteTramos.setEnabled(false);
         escala.setEnabled(false);
@@ -70,10 +70,13 @@ public class PanelSwing extends JPanel {
         ecualizarHistograma.setEnabled(false);
         especificarHistograma.setEnabled(false);
         gamma.setEnabled(false);
+        diferenciaImagenes.setEnabled(false);
         histogramas = menuVer.add("Histogramas");
         histogramas.setEnabled(false);
         datos = menuVer.add("Datos de la imagen");
         datos.setEnabled(false);
+        histogramaDif = menuVer.add("Histograma de la imagen diferencia");
+        histogramaDif.setEnabled(false);
         barraMenu.add(menuArchivo);
         barraMenu.add(menuEdicion);
         barraMenu.add(menuVer);
@@ -183,6 +186,12 @@ public class PanelSwing extends JPanel {
         panelGamma.add(coefGamma);
         panelGamma.add(aceptar5);
 
+        aceptar6 = new JButton("Aceptar");
+        panelUmbral = new JPanel(new FlowLayout());
+        umbral = new JTextArea(1, 4);
+        panelUmbral.add(new JLabel("Introduce el umbral de cambio: "));
+        panelUmbral.add(umbral);
+        panelUmbral.add(aceptar6);
 
         panelBajo.add("carta1", panelVacio);
         panelBajo.add("carta2", panelDatos);
@@ -191,6 +200,7 @@ public class PanelSwing extends JPanel {
         panelBajo.add("carta5", panelAjusteTramos);
         panelBajo.add("carta6", panelAjusteTramos2);
         panelBajo.add("carta7", panelGamma);
+        panelBajo.add("carta8", panelUmbral);
         esqueInf1.show(panelBajo, "carta1");
         this.add("South",panelBajo);
     }
@@ -205,10 +215,12 @@ public class PanelSwing extends JPanel {
         panelDespl2 = new JScrollPane(lienzo2);
         lienzo2.estableceBase(panelDespl2);
         panelHistograma = creaPanelHistograma();
+        panelHistogramaDiferencia = creaPanelHistogramaDiferencia();
 
         panelDerecho.add("carta1", panelVacio);
         panelDerecho.add("carta2", panelHistograma);
         panelDerecho.add("carta3", panelDespl2);
+        panelDerecho.add("carta4", panelHistogramaDiferencia);
         this.add("East", panelDerecho);
         esqueInf2.show(panelDerecho, "carta1");
     }
@@ -256,5 +268,30 @@ public class PanelSwing extends JPanel {
         panelHistograma.add(panelGraficoAcumulado);
 
         return panelHistograma;
+    }
+
+    private JPanel creaPanelHistogramaDiferencia() {
+        histDiferencia = ChartFactory.createXYBarChart(
+                "HISTOGRAMA DE LA IMAGEN DIFERENCIA (Id)", // Title
+                "Nivel de gris", // x-axis Label
+                false,
+                "Numero de pixels", // y-axis Label
+                null, // Dataset
+                PlotOrientation.VERTICAL, // Plot Orientation
+                true, // Show Legend
+                true, // Use tooltips
+                false // Configure chart to generate URLs?
+        );
+        ValueAxis domainAxis = histDiferencia.getXYPlot().getDomainAxis();
+        domainAxis.setRange(new Range(0, 255));
+
+        ValueAxis rangeAxis = histDiferencia.getXYPlot().getRangeAxis();
+        rangeAxis.setAutoRange(true);
+        ChartPanel panelGrafico = new ChartPanel(histDiferencia);
+
+        JPanel panelHistogramaDiferencia = new JPanel(new GridLayout(1, 1));
+        panelHistogramaDiferencia.add(panelGrafico);
+
+        return panelHistogramaDiferencia;
     }
 }

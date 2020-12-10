@@ -2,6 +2,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import javax.swing.*;
 
 
@@ -40,7 +41,12 @@ public class Controlador implements ActionListener, MouseListener {
             JMenuItem i = (JMenuItem) source;
             switch (i.getText()) {
                 case "Abrir" -> {
-                    boolean estado = manejador.cargaArchivoDeImagen(panel, panel.lienzo);
+                    boolean estado = false;
+                    try {
+                        estado = manejador.cargaArchivoDeImagen(panel, panel.lienzo);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     if (estado) {
                         panel.guardar.setEnabled(true);
                         panel.escala.setEnabled(true);
@@ -54,6 +60,8 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.ecualizarHistograma.setEnabled(false);
                         panel.especificarHistograma.setEnabled(false);
                         panel.gamma.setEnabled(false);
+                        panel.diferenciaImagenes.setEnabled(false);
+                        panel.histogramaDif.setEnabled(false);
                     }
                 }
                 case "Guardar" -> manejador.guardaArchivoDeImagen(panel);
@@ -75,6 +83,7 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.ecualizarHistograma.setEnabled(true);
                         panel.especificarHistograma.setEnabled(true);
                         panel.gamma.setEnabled(true);
+                        panel.diferenciaImagenes.setEnabled(true);
                     }
                 }
                 case "Histogramas" -> panel.esqueInf2.show(panel.panelDerecho, "carta2");
@@ -99,7 +108,7 @@ public class Controlador implements ActionListener, MouseListener {
                 case "Especificar histograma" -> {
                     try {
                         manejador.especificarHistograma();
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException | IOException e) {
                         e.printStackTrace();
                     }
                     int confirmado = manejador.confirmar(panel);
@@ -111,6 +120,22 @@ public class Controlador implements ActionListener, MouseListener {
                 case "Corrección Gamma" -> {
                     panel.esqueInf1.show(panel.panelBajo, "carta7");
                     mode = "gamma";
+                }
+                case "Diferencia entre dos imagenes" -> {
+                    try {
+                        boolean noError = manejador.establecerUmbral(panel);
+                        if (noError) {
+                            panel.esqueInf2.show(panel.panelDerecho, "carta4");
+                            panel.esqueInf1.show(panel.panelBajo, "carta8");
+                            mode = "diferencia";
+                            panel.histogramaDif.setEnabled(true);
+                        }
+                    } catch (InterruptedException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                case "Histograma de la imagen diferencia" -> {
+                    panel.esqueInf2.show(panel.panelDerecho, "carta4");
                 }
             }
         } else if (source instanceof JButton) {
@@ -149,14 +174,14 @@ public class Controlador implements ActionListener, MouseListener {
             }
             else if (i.getText().equals("Aceptar") && mode.compareTo("ajusteTramos") == 0) {
                 boolean noError = manejador.ajustarTramos(panel);
+                panel.panelAjusteTramos2.removeAll();
+                panel.coordenadas.clear();
                 if (noError) {
                     int confirmado = manejador.confirmar(panel);
                     if (confirmado == 0) {
-                        panel.panelAjusteTramos2.removeAll();
-                        panel.coordenadas.clear();
                         manejador.actualizarDatos(panel);
-                        panel.esqueInf1.show(panel.panelBajo, "carta1");
                     }
+                    panel.esqueInf1.show(panel.panelBajo, "carta1");
                 }
             }
             else if (i.getText().equals("Aceptar") && mode.compareTo("gamma") == 0) {
@@ -167,6 +192,13 @@ public class Controlador implements ActionListener, MouseListener {
                         manejador.actualizarDatos(panel);
                         panel.esqueInf1.show(panel.panelBajo, "carta1");
                     }
+                }
+            }
+            else if (i.getText().equals("Aceptar") && mode.compareTo("diferencia") == 0) {
+                boolean noError = manejador.diferenciaImagenes(panel);
+                if (noError) {
+                    manejador.confirmarDiferencia(panel);
+                    panel.esqueInf2.show(panel.panelDerecho, "carta4");
                 }
             }
         }

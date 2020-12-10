@@ -7,52 +7,47 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-/**
- * @Desc Clase que implementa el procesamiento básico de imágenes digitales 
- * @author Beto González
- *
- */
+
 public class ProcesadorDeImagenes extends Canvas {
     Image imagenBase;
     Image imagenModificada;
     String mensajeDeError = "";
     String tipoDeImagen = "";
-    /**
-     * @Desc Método que permite agregar una imagen al procesador que es recibida como parámetro
-     * @param imagen
-     */
-    public void estableceImagen(Image imagen)
-    {
-        imagenBase = imagen;
-        imagenModificada = null;
-        tipoDeImagen = (String)imagenBase.getProperty("type", this);
-    }
+
     public void estableceImagen(Image imagen, String tipo) {
         imagenBase = imagen;
         imagenModificada = null;
         tipoDeImagen = tipo;
     }
-    /**
-     * @Desc Método que permite agregar una imagen al procesador directamente desde un archivo de imagen
-     */
-    public Image cargaImagen(String ruta, String nombreDeArchivo)
-    {
-        imagenBase = Toolkit.getDefaultToolkit().getImage(ruta);
+
+    public Image cargaImagen(String ruta, String nombreDeArchivo) throws IOException {
         imagenModificada = null;
         String[] partes = null;
         partes = nombreDeArchivo.split("\\.");
         int tope = partes.length;
         if(tope > 1)
             tipoDeImagen = partes[tope - 1];
+        if(tipoDeImagen.equals("tiff") || tipoDeImagen.equals("tif")) {
+            imagenBase = ImageIO.read(new File(ruta));
+        } else {
+            imagenBase = Toolkit.getDefaultToolkit().getImage(ruta);
+        }
         return imagenBase;
     }
 
-    /**
-     * @Desc Método que convierte la imagen base contenida en una imagen a escala de grises
-     * @return Verdadero si todo salió bien, falso en caso de error
-     * @param
-     * @param
-     */
+    public boolean guardaImagen(String ruta, String nombreDeArchivo, String tipoDeImagen)
+    {
+        boolean estado = true;
+        BufferedImage imagen = creaBufferedImage(imagenBase);
+        try {
+            ImageIO.write(imagen, "jpg", new File(ruta));
+        } catch (IOException e) {
+            estado = false;
+            this.mensajeDeError = e.getMessage();
+        }
+        return estado;
+    }
+
     public int[] escalaDeGrises()
     {
         int p, rojo, verde, azul, gris, totalDePixeles, a, h;
@@ -86,77 +81,28 @@ public class ProcesadorDeImagenes extends Canvas {
         return lut;
     }
 
-    /**
-     * @Desc Método que almacena la imagen contenida en una archivo de imagen, de acuerdo a la información del archivo que recibe como parámetro
-     * @param ruta
-     * @param nombreDeArchivo
-     * @param tipoDeImagen
-     * @return
-     */
-    public boolean guardaImagen(String ruta, String nombreDeArchivo, String tipoDeImagen)
-    {
-        boolean estado = true;
-        BufferedImage imagen = creaBufferedImage((imagenModificada != null) ? imagenModificada : imagenBase);
-        try {
-            ImageIO.write(imagen, tipoDeImagen, new File(ruta));
-        } catch (IOException e) {
-            estado = false;
-            this.mensajeDeError = e.getMessage();
-        }
-        return estado;
-    }
-    /**
-     * @Desc Versión por defecto del método guardaImagen
-     * @param ruta
-     * @param nombreDeArchivo
-     * @return
-     */
-    public boolean guardaImagen(String ruta, String nombreDeArchivo)
-    {
-        String[] partes = null;
-        partes = nombreDeArchivo.split("\\.");
-        int tope = partes.length;
-        if(tope > 1)
-            tipoDeImagen = partes[tope - 1];
-        return guardaImagen(ruta, nombreDeArchivo, tipoDeImagen);
-    }
-    /**
-     * @Desc Método que devuelve la imagen modificada por el procesador en un objeto de la clase Image
-     * @return
-     */
+
     public Image devuelveImagenModificada()
     {
         return imagenModificada;
     }
-    /**
-     * @Desc Método que devuelve la imagen base dentro de un objeto de la clase Image
-     * @return
-     */
+
     public Image devuelveImagenBase()
     {
         return imagenBase;
     }
 
     public String devuelveTipo() { return tipoDeImagen; }
-    /**
-     * @Desc Método que retora el último mensaje de error producido por los métodos de la clase
-     * @return
-     */
+
     public String devuelveMensajeDeError()
     {
         return mensajeDeError;
     }
-    /**
-     * @Desc Versión por defecto del método creaBufferedImage
-     * @return El objeto BufferedImage
-     */
+
     public BufferedImage creaBufferedImage(Image imagenDeEntrada) {
         return creaBufferedImage(imagenDeEntrada, BufferedImage.TYPE_INT_RGB);
     }
-    /**
-     * @Desc Método para convertir un objeto Image a un objeto BufferedImage
-     * @return El objeto BufferedImage
-     */
+
     public BufferedImage creaBufferedImage(Image imagenDeEntrada, int imageType) {
         BufferedImage bufferedImageDeSalida = new BufferedImage(imagenDeEntrada.getWidth(this), imagenDeEntrada.getHeight(this), imageType);
         Graphics g = bufferedImageDeSalida.getGraphics();
@@ -231,27 +177,36 @@ public class ProcesadorDeImagenes extends Canvas {
     public boolean ajustarTramos(JTextArea inicio, ArrayList<JTextArea> coordenadas, PanelSwing panel, int[] lut) {
         double[] cambio = new double[256];
         double A;
-        int i;
+        int i, x, y, xPrev, yPrev;
         int ind = 0;
         int altura = Integer.parseInt(inicio.getText());
+        int alturaFinal;
 
         cambio[ind] = altura;
         ind ++;
-        for (i = 0; i < ((coordenadas.size()-1) / 2); i++) {
-            int x = Integer.parseInt(coordenadas.get(i*2).getText());
-            A = Double.parseDouble(coordenadas.get(i*2 +1).getText());
-            if (A < 0) {
-                panel.errorLabel.setText("El parámetro A debe ser mayor que 0 para que la función sea monótona creciente");
-                return false;
-            }
+        x = Integer.parseInt(coordenadas.get(0).getText());
+        y = Integer.parseInt(coordenadas.get(1).getText());
+        A = (y - altura) / (x - 0);
+        xPrev = x;
+        yPrev = y;
+        while (ind < x) {
+            cambio[ind] = cambio[ind-1] + A;
+            ind++;
+        }
+        for (i = 1; i < ((coordenadas.size()-1) / 2); i++) {
+            x = Integer.parseInt(coordenadas.get(i*2).getText());
+            y = Integer.parseInt(coordenadas.get(i*2 +1).getText());
+            A = (y - yPrev) / (x - xPrev);
+            xPrev = x;
+            yPrev = y;
             while (ind < x) {
                 cambio[ind] = cambio[ind-1] + A;
                 ind++;
             }
         }
 
-        A = Double.parseDouble(coordenadas.get(i*2).getText());
-
+        alturaFinal = Integer.parseInt(coordenadas.get(i*2).getText());
+        A = (alturaFinal - yPrev) / (cambio.length - 1 - xPrev);
         while (ind < cambio.length) {
             cambio[ind] = cambio[ind -1] + A;
             ind++;
@@ -267,8 +222,8 @@ public class ProcesadorDeImagenes extends Canvas {
         return true;
     }
 
-    public double[] especificarHistograma(String ruta, double[] cdf) throws InterruptedException {
-        Image imageRef = Toolkit.getDefaultToolkit().getImage(ruta);
+    public double[] especificarHistograma(String ruta, double[] cdf) throws InterruptedException, IOException {
+        Image imageRef = ImageIO.read(new File(ruta));
         MediaTracker tracker = new MediaTracker(this);
         int i, j;
         double[] T = new double[cdf.length];
@@ -329,9 +284,35 @@ public class ProcesadorDeImagenes extends Canvas {
         for (int i = 0; i < length; i++) {
             sum = sum + hist[i];
             cdf[i] = sum / lutRef.length;
-            System.out.println(cdf[i]);
         }
 
         return cdf;
+    }
+
+    public int[] diferenciaImagenes(String ruta) throws InterruptedException, IOException {
+        Image imageRef = ImageIO.read(new File(ruta));
+        MediaTracker tracker = new MediaTracker(this);
+
+        tracker.addImage(imageRef, 0);
+        tracker.waitForID(0);
+
+        return getLUT(creaBufferedImage(imageRef));
+    }
+
+
+    public void dibujarDiferencias(int umbral, int[] lutDiferencia) {
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this);  //Ancho
+        Color newColor = new Color(255, 0, 0);
+        BufferedImage img = creaBufferedImage(imagenBase);
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                if (lutDiferencia[i*(h-1)+j] > umbral)
+                    img.setRGB(i, j, newColor.getRGB());
+            }
+        }
+
+        imagenModificada = img;
     }
 }

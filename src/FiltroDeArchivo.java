@@ -1,9 +1,4 @@
 import java.io.*;
-/**
- * @Desc Clase que permite crear un filtro de archivos para utilizarlo con un selector de archivos
- * @author Beto González
- *
- */
 
 public class FiltroDeArchivo extends javax.swing.filechooser.FileFilter{
     String descrip = "";

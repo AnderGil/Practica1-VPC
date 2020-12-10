@@ -1,29 +1,22 @@
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import javax.swing.*;
 
-/**
- * @Desc Clase del nivel de la capa de negocios, que implementa las operaciones que son llamadas desde el Controlador de la aplicación
- * para poder cargar las imagenes, alamacenarlas y modificaralas, apoyandose en un objeto la clase de más bajo nivel, es decir ProcesadorDeImagenes 
- * @author Beto González
- *
- */
+
 public class ManejadorDeImagenes {
     ProcesadorDeImagenes procesador;
     int min, max, xPixel, yPixel, grisPixel;
     int M = 256;
     double brillo, contraste;
     double[] histograma, histogramaAcumulado, cdf, pdf;
-    int[] lut;
+    int[] lut, lutDiferencia;
     boolean editado = false;
 
     public ManejadorDeImagenes() {
@@ -38,19 +31,12 @@ public class ManejadorDeImagenes {
         yPixel = -1;
         grisPixel = -1;
     }
-    /**
-     * @Desc Método que lleva a cabo la carga de un archivo de imagen
-     * @param contenedor
-     * @param lienzo
-     * @return
-     */
-    public boolean cargaArchivoDeImagen(JPanel contenedor, PanelDeImagen lienzo)
-    {
+
+    public boolean cargaArchivoDeImagen(JPanel contenedor, PanelDeImagen lienzo) throws IOException {
         String nombreArchivo = "";
         boolean estado = true;
         if(editado)
         {
-            //new MsgError("Confirmacion","Aqui debemos pedir confirmación",200,180);
             int resultado = JOptionPane.showConfirmDialog((Component)null, "¿Deseas guardar los cambios en este documento?","Confirmación",JOptionPane.YES_NO_OPTION);
             if(resultado==JOptionPane.YES_OPTION)
                 guardaArchivoDeImagen(contenedor);
@@ -75,11 +61,7 @@ public class ManejadorDeImagenes {
             estado = false;
         return estado;
     }
-    /**
-     * @Desc Método que lleva a cabo la operación de salvar el archivo de imagen cargado
-     * @param contenedor
-     * @return
-     */
+
     public boolean guardaArchivoDeImagen(JPanel contenedor)
     {
         boolean estado = true;
@@ -95,7 +77,7 @@ public class ManejadorDeImagenes {
             //guardar archivo en la ruta especificada
             String nombreArchivo = selector.getSelectedFile().getName();
             String ruta = selector.getSelectedFile().getPath();
-            estado = procesador.guardaImagen(ruta, nombreArchivo);
+            estado = procesador.guardaImagen(ruta, nombreArchivo, procesador.devuelveTipo());
             if(!estado)
                 JOptionPane.showMessageDialog((Component)null,"Error del sistema : "+procesador.devuelveMensajeDeError(),"Error de Imagen",JOptionPane.OK_OPTION);
             editado = false;
@@ -105,31 +87,32 @@ public class ManejadorDeImagenes {
         return estado;
     }
 
-    /**
-     * @Desc Método que lleva a cabo la transformación de la imagen cargada a una imagen de escala de grises y la despliega en pantalla
-     * @param
-     */
+
     public void muestraEscalaDeGrises()
     {
         lut = procesador.escalaDeGrises();
     }
 
-    /**
-     * @Desc Método que coloca en la pantalla la imagen original que se cargó con el método cargarArchivoDeImagen
-     * @param lienzo
-     */
-    public void restableceImagen(PanelDeImagen lienzo)
-    {
-        lienzo.estableceImagen(procesador.devuelveImagenBase());
-        lienzo.repaint();
-        editado = false;
+    public void actualizarDatos(PanelSwing panel) {
+        Image imagen = procesador.devuelveImagenBase();
+        DecimalFormat df = new DecimalFormat("#.###");
+
+        actualizarHistogramas(panel.hist, panel.histAcumulado);
+        panel.panelDerecho.repaint();
+
+        panel.tipoArchivo.setText(procesador.tipoDeImagen);
+        panel.tamanoImagen.setText(imagen.getHeight(null) + " X " + imagen.getWidth(null));
+        panel.rangoValores.setText("Min: " + min + " Max: " + max);
+        panel.brilloImagen.setText(String.valueOf(df.format(brillo)));
+        panel.contrasteImagen.setText(String.valueOf(df.format(contraste)));
     }
 
-    public void actualizarHistogramas(JFreeChart hist, JFreeChart histAcumulado) {
+    private void actualizarHistogramas(JFreeChart hist, JFreeChart histAcumulado) {
         int gris;
         double sumaIntensidades = 0;
         resetearHistograma();
-
+        min = M;
+        max = -1;
         for (int i = 0; i < lut.length; i++) {
             gris = lut[i];
             histograma[gris] = histograma[gris] +1;
@@ -172,6 +155,10 @@ public class ManejadorDeImagenes {
         }
     }
 
+    public void actualizarLUT() {
+        lut = procesador.actualizarLUT();
+    }
+
     private double calcularContraste(double brillo) {
         double suma = 0;
         for (int i = 0; i < lut.length; i++) {
@@ -202,6 +189,24 @@ public class ManejadorDeImagenes {
         return res;
     }
 
+    public void confirmarDiferencia(PanelSwing panel) {
+        panel.esqueInf2.show(panel.panelDerecho, "carta3");
+
+        Image imgPost = procesador.devuelveImagenModificada();
+
+        panel.lienzo2.estableceImagen(imgPost);
+        panel.lienzo2.repaint();
+        int res = JOptionPane.showConfirmDialog(null, "Quieres confirmar esta transformación?", "Confirmar transformación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (res == 0 ) {
+            panel.lienzo.estableceImagen(imgPost);
+            panel.lienzo.repaint();
+        }
+
+        panel.esqueInf2.show(panel.panelDerecho, "carta4");
+    }
+
     public boolean seleccionarSubimagen(PanelSwing panel) throws Exception {
         int firstPointX, firstPointY, secondPointX, secondPointY;
         try {
@@ -214,23 +219,6 @@ public class ManejadorDeImagenes {
             panel.errorLabel.setText("ERROR. Introduce coordenadas positivas, y procura que el primer punto esté por encima y a la izquierda del segundo");
             return false;
         }
-    }
-    public void actualizarLUT() {
-        lut = procesador.actualizarLUT();
-    }
-
-    public void actualizarDatos(PanelSwing panel) {
-        Image imagen = procesador.devuelveImagenBase();
-        DecimalFormat df = new DecimalFormat("#.###");
-
-        actualizarHistogramas(panel.hist, panel.histAcumulado);
-        panel.panelDerecho.repaint();
-
-        panel.tipoArchivo.setText(procesador.tipoDeImagen);
-        panel.tamanoImagen.setText(imagen.getHeight(null) + " X " + imagen.getWidth(null));
-        panel.rangoValores.setText("Min: " + min + " Max: " + max);
-        panel.brilloImagen.setText(String.valueOf(df.format(brillo)));
-        panel.contrasteImagen.setText(String.valueOf(df.format(contraste)));
     }
 
     public void pixelSeleccionado(MouseEvent e, PanelSwing panel) {
@@ -301,12 +289,11 @@ public class ManejadorDeImagenes {
                 panel.panelAjusteTramos2.add(new JLabel("Coordenada X del  final del tramo " + (i+1) + ":"));
                 panel.coordenadas.add(new JTextArea(1, 4));
                 panel.panelAjusteTramos2.add(panel.coordenadas.get(i*2));
-                panel.panelAjusteTramos2.add(new JLabel("Parámetro A del tramo " + (i+1) + ":"));
+                panel.panelAjusteTramos2.add(new JLabel("Coordenada Y del final del tramo " + (i+1) + ":"));
                 panel.coordenadas.add(new JTextArea(1, 4));
                 panel.panelAjusteTramos2.add(panel.coordenadas.get((i*2 + 1)));
             }
-            System.out.println(i);
-            panel.panelAjusteTramos2.add(new JLabel("Parámetro A del tramo " + i+1 + ":"));
+            panel.panelAjusteTramos2.add(new JLabel("Coordenada Y del final:  "));
             panel.coordenadas.add(new JTextArea(1, 4));
             panel.panelAjusteTramos2.add(panel.coordenadas.get((i*2)));
             panel.panelAjusteTramos2.add(panel.aceptar4);
@@ -335,7 +322,7 @@ public class ManejadorDeImagenes {
         procesador.reDibujarImagen(lut);
     }
 
-    public void especificarHistograma() throws InterruptedException {
+    public void especificarHistograma() throws InterruptedException, IOException {
         double[] T;
         int i;
 
@@ -351,7 +338,6 @@ public class ManejadorDeImagenes {
             T = procesador.especificarHistograma(ruta, cdf);
 
             for (i = 0; i < lut.length; i++) {
-                //System.out.println(T[lut[i]]);
                 lut[i] = (int) T[lut[i]];
             }
 
@@ -373,6 +359,58 @@ public class ManejadorDeImagenes {
 
             return true;
         } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean establecerUmbral(PanelSwing panel) throws InterruptedException, IOException {
+        int[] lut2;
+        double[] histogramaDif = new double[M];
+        int diferencia;
+        XYSeries set1 = new XYSeries("");
+        XYSeriesCollection dataset1 = new XYSeriesCollection();
+
+        JFileChooser selector = new JFileChooser();
+        selector.addChoosableFileFilter(new FiltroDeArchivo("TIFF", "archivos TIFF"));
+        String lista[] = {"jpeg","jpg"};
+        selector.addChoosableFileFilter(new FiltroDeArchivo(lista,"Archivos JPEG"));
+        selector.setDialogTitle("Selecciona la imagen que quieres comparar");
+        selector.setDialogType(JFileChooser.OPEN_DIALOG);
+        int resultado = selector.showOpenDialog(null);
+        if(resultado == JFileChooser.APPROVE_OPTION) {
+            String ruta = selector.getSelectedFile().getPath();
+            lut2 = procesador.diferenciaImagenes(ruta);
+            if (lut.length != lut2.length) {
+                JOptionPane.showMessageDialog(panel, "Las imagenes tienen que ser del mismo tamaño");
+            } else {
+                lutDiferencia = new int[lut.length];
+                for (int i = 0; i < lut.length; i++) {
+                    diferencia = Math.abs(lut[i] - lut2[i]);
+                    histogramaDif[diferencia] = histogramaDif[diferencia] + 1;
+                    lutDiferencia[i] = diferencia;
+                }
+                for (int i = 0; i < histogramaDif.length; i++) {
+                    set1.add(i, histogramaDif[i]);
+                }
+                dataset1.addSeries(set1);
+                panel.histDiferencia.getXYPlot().setDataset(dataset1);
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean diferenciaImagenes(PanelSwing panel) {
+        int umbral;
+
+        try {
+            umbral = Integer.parseInt(panel.umbral.getText());
+            procesador.dibujarDiferencias(umbral, lutDiferencia);
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(panel, "El umbral tiene que ser un número positivo entre 0 y 255");
+            e.printStackTrace();
             return false;
         }
     }
