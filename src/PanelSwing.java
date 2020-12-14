@@ -21,7 +21,7 @@ public class PanelSwing extends JPanel {
     JMenu menuArchivo, menuEdicion, menuVer;
     JMenuItem abrir, guardar, salir, escala, histogramas, histogramaDif, subimagen, datos, diferenciaImagenes, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
     JScrollPane panelDespl, panelDespl2;
-    JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
+    JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, entropiaImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
     ArrayList<JTextArea> coordenadas;
     JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma, umbral;
     JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5, aceptar6;
@@ -32,7 +32,7 @@ public class PanelSwing extends JPanel {
     Editor editor;
     PanelDeImagen lienzo;
     PanelDeImagen2 lienzo2;
-    CardLayout esqueInf1, esqueInf2, esqueInf3;
+    CardLayout esqueInf1, esqueInf2;
     GridLayout histLayout;
 
     /**
@@ -85,6 +85,18 @@ public class PanelSwing extends JPanel {
         creapanelBajo();     //Creamos el panel en el que se mostraran los controles para manipular la imagen
         creaPanelDerecho();
     }
+    PanelSwing (Image img) {
+        this.setLayout(new BorderLayout());
+
+        PanelDeImagen lienzoImg = new PanelDeImagen();
+        JScrollPane scroll = new JScrollPane(lienzoImg);
+        lienzoImg.estableceBase(scroll);
+
+        lienzoImg.estableceImagen(img);
+        lienzoImg.repaint();
+
+        add("Center", scroll);
+    }
     /**
      * @Desc Método que crea el contenido del panel central de la ventana
      */
@@ -111,6 +123,7 @@ public class PanelSwing extends JPanel {
         tipoArchivo = new JLabel();
         tamanoImagen = new JLabel();
         rangoValores = new JLabel();
+        entropiaImagen = new JLabel();
         brilloImagen = new JLabel();
         contrasteImagen = new JLabel();
         pixelClicado = new JLabel();
@@ -124,6 +137,8 @@ public class PanelSwing extends JPanel {
         panelDatos.add(tamanoImagen);
         panelDatos.add(new JLabel("Rango de valores: "));
         panelDatos.add(rangoValores);
+        panelDatos.add(new JLabel("Entropía: "));
+        panelDatos.add(entropiaImagen);
         panelDatos.add(new JLabel("Brillo: "));
         panelDatos.add(brilloImagen);
         panelDatos.add(new JLabel("Contraste: "));

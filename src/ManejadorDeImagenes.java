@@ -14,10 +14,12 @@ public class ManejadorDeImagenes {
     ProcesadorDeImagenes procesador;
     int min, max, xPixel, yPixel, grisPixel;
     int M = 256;
-    double brillo, contraste;
+    double brillo, contraste, entropia;
     double[] histograma, histogramaAcumulado, cdf, pdf;
-    int[] lut, lutDiferencia;
+    int[] lut, lut2, lutDiferencia;
     boolean editado = false;
+    FrameDiferencia frameDiferencia;
+    Image imgPre, imgPost, imgDif;
 
     public ManejadorDeImagenes() {
         procesador = new ProcesadorDeImagenes();
@@ -30,6 +32,7 @@ public class ManejadorDeImagenes {
         xPixel = -1;
         yPixel = -1;
         grisPixel = -1;
+        entropia = 0;
     }
 
     public boolean cargaArchivoDeImagen(JPanel contenedor, PanelDeImagen lienzo) throws IOException {
@@ -103,6 +106,7 @@ public class ManejadorDeImagenes {
         panel.tipoArchivo.setText(procesador.tipoDeImagen);
         panel.tamanoImagen.setText(imagen.getHeight(null) + " X " + imagen.getWidth(null));
         panel.rangoValores.setText("Min: " + min + " Max: " + max);
+        panel.entropiaImagen.setText(String.valueOf(df.format(entropia)));
         panel.brilloImagen.setText(String.valueOf(df.format(brillo)));
         panel.contrasteImagen.setText(String.valueOf(df.format(contraste)));
     }
@@ -113,6 +117,7 @@ public class ManejadorDeImagenes {
         resetearHistograma();
         min = M;
         max = -1;
+        entropia = 0;
         for (int i = 0; i < lut.length; i++) {
             gris = lut[i];
             histograma[gris] = histograma[gris] +1;
@@ -129,6 +134,8 @@ public class ManejadorDeImagenes {
         XYSeriesCollection dataset1 = new XYSeriesCollection();
         XYSeriesCollection dataset2 = new XYSeriesCollection();
 
+        double logbase2;
+
         for (int i = 0; i < histograma.length; i++) {
             set1.add(i, histograma[i]);
 
@@ -136,8 +143,14 @@ public class ManejadorDeImagenes {
             histogramaAcumulado[i] = sum;
             cdf[i] = histogramaAcumulado[i] / lut.length;
             pdf[i] = histograma[i] / lut.length;
+            if (pdf[i] != 0 ) {
+                logbase2 = Math.log10(pdf[i]) / Math.log10(2.0);
+                entropia = entropia + (pdf[i] * logbase2);
+            }
+
             set2.add(i, histogramaAcumulado[i]);
         }
+        entropia = - entropia;
         brillo = sumaIntensidades / (double)lut.length;
         contraste = calcularContraste(brillo);
 
@@ -364,7 +377,6 @@ public class ManejadorDeImagenes {
     }
 
     public boolean establecerUmbral(PanelSwing panel) throws InterruptedException, IOException {
-        int[] lut2;
         double[] histogramaDif = new double[M];
         int diferencia;
         XYSeries set1 = new XYSeries("");
@@ -395,6 +407,10 @@ public class ManejadorDeImagenes {
                 dataset1.addSeries(set1);
                 panel.histDiferencia.getXYPlot().setDataset(dataset1);
 
+                imgPre = procesador.devuelveImagenBase();
+                imgPost = procesador.reDibujarImagen(lut2);
+                imgDif = procesador.reDibujarImagen(lutDiferencia);
+
                 return true;
             }
         }
@@ -413,5 +429,11 @@ public class ManejadorDeImagenes {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void mostrarImagenes() {
+        FrameDiferencia fd1 = new FrameDiferencia("Imagen original", imgPre, 0, 0, 509, 800);
+        FrameDiferencia fd2 = new FrameDiferencia("Imagen con la que se compara", imgPost,510, 0, 509, 800);
+        FrameDiferencia fd3 = new FrameDiferencia("Imagen diferencia", imgDif, 1020, 0, 509, 800);
     }
 }

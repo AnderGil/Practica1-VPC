@@ -125,6 +125,7 @@ public class Controlador implements ActionListener, MouseListener {
                     try {
                         boolean noError = manejador.establecerUmbral(panel);
                         if (noError) {
+                            manejador.mostrarImagenes();
                             panel.esqueInf2.show(panel.panelDerecho, "carta4");
                             panel.esqueInf1.show(panel.panelBajo, "carta8");
                             mode = "diferencia";

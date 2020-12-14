@@ -11,6 +11,8 @@ import javax.swing.*;
 public class ProcesadorDeImagenes extends Canvas {
     Image imagenBase;
     Image imagenModificada;
+    Image imagenPost;
+
     String mensajeDeError = "";
     String tipoDeImagen = "";
 
@@ -92,6 +94,10 @@ public class ProcesadorDeImagenes extends Canvas {
         return imagenBase;
     }
 
+    public Image devuelveImagenPost() {
+        return imagenPost;
+    }
+
     public String devuelveTipo() { return tipoDeImagen; }
 
     public String devuelveMensajeDeError()
@@ -145,7 +151,7 @@ public class ProcesadorDeImagenes extends Canvas {
         return lut;
     }
 
-    public void reDibujarImagen(int[] lut) {
+    public Image reDibujarImagen(int[] lut) {
         int a = imagenBase.getWidth(this);  //Ancho
         int h = imagenBase.getHeight(this); //Alto
         int gris;
@@ -160,6 +166,8 @@ public class ProcesadorDeImagenes extends Canvas {
             }
         }
         imagenModificada = bImagen;
+
+        return bImagen;
     }
     public int[] ajustarBrilloContraste(double A, double B, int[] lut) {
         int gris;
@@ -177,25 +185,35 @@ public class ProcesadorDeImagenes extends Canvas {
     public boolean ajustarTramos(JTextArea inicio, ArrayList<JTextArea> coordenadas, PanelSwing panel, int[] lut) {
         double[] cambio = new double[256];
         double A;
-        int i, x, y, xPrev, yPrev;
+        int i = 0;
+        double x, y, xPrev, yPrev;
         int ind = 0;
-        int altura = Integer.parseInt(inicio.getText());
-        int alturaFinal;
+        double altura = Double.parseDouble(inicio.getText());
+        double alturaFinal;
 
         cambio[ind] = altura;
         ind ++;
-        x = Integer.parseInt(coordenadas.get(0).getText());
-        y = Integer.parseInt(coordenadas.get(1).getText());
+        if(coordenadas.size() > 1) {
+            x = Double.parseDouble(coordenadas.get(i*2).getText());
+            y = Double.parseDouble(coordenadas.get(i*2 + 1).getText());
+        }
+        else {
+            x = cambio.length -1;
+            y = Double.parseDouble(coordenadas.get(i*2).getText());
+        }
+        i++;
+
         A = (y - altura) / (x - 0);
         xPrev = x;
         yPrev = y;
+        
         while (ind < x) {
             cambio[ind] = cambio[ind-1] + A;
             ind++;
         }
-        for (i = 1; i < ((coordenadas.size()-1) / 2); i++) {
-            x = Integer.parseInt(coordenadas.get(i*2).getText());
-            y = Integer.parseInt(coordenadas.get(i*2 +1).getText());
+        for (; i < ((coordenadas.size()-1) / 2); i++) {
+            x = Double.parseDouble(coordenadas.get(i*2).getText());
+            y = Double.parseDouble(coordenadas.get(i*2 +1).getText());
             A = (y - yPrev) / (x - xPrev);
             xPrev = x;
             yPrev = y;
@@ -204,12 +222,13 @@ public class ProcesadorDeImagenes extends Canvas {
                 ind++;
             }
         }
-
-        alturaFinal = Integer.parseInt(coordenadas.get(i*2).getText());
-        A = (alturaFinal - yPrev) / (cambio.length - 1 - xPrev);
-        while (ind < cambio.length) {
-            cambio[ind] = cambio[ind -1] + A;
-            ind++;
+        if (coordenadas.size() > 1) {
+            alturaFinal = Double.parseDouble(coordenadas.get(i * 2).getText());
+            A = (alturaFinal - yPrev) / (cambio.length - 1 - xPrev);
+            while (ind < cambio.length) {
+                cambio[ind] = cambio[ind - 1] + A;
+                ind++;
+            }
         }
 
         for(i = 0; i < lut.length; i++) {
@@ -290,13 +309,13 @@ public class ProcesadorDeImagenes extends Canvas {
     }
 
     public int[] diferenciaImagenes(String ruta) throws InterruptedException, IOException {
-        Image imageRef = ImageIO.read(new File(ruta));
+        imagenPost = ImageIO.read(new File(ruta));
         MediaTracker tracker = new MediaTracker(this);
 
-        tracker.addImage(imageRef, 0);
+        tracker.addImage(imagenPost, 0);
         tracker.waitForID(0);
 
-        return getLUT(creaBufferedImage(imageRef));
+        return getLUT(creaBufferedImage(imagenPost));
     }
 
 
