@@ -196,6 +196,9 @@ public class ManejadorDeImagenes {
             panel.lienzo.repaint();
             procesador.estableceImagen(imgPost, procesador.devuelveTipo());
         }
+        else {
+            lut = procesador.actualizarLUT();
+        }
 
         panel.esqueInf2.show(panel.panelDerecho, "carta1");
 
@@ -435,5 +438,30 @@ public class ManejadorDeImagenes {
         FrameDiferencia fd1 = new FrameDiferencia("Imagen original", imgPre, 0, 0, 509, 800);
         FrameDiferencia fd2 = new FrameDiferencia("Imagen con la que se compara", imgPost,510, 0, 509, 800);
         FrameDiferencia fd3 = new FrameDiferencia("Imagen diferencia", imgDif, 1020, 0, 509, 800);
+    }
+
+    public void espejoHorizontal() {
+        lut = procesador.espejoHorizontal(lut);
+    }
+
+    public void espejoVertical() {
+        lut = procesador.espejoVertical(lut);
+    }
+
+    public boolean traspuesta(PanelSwing panel) {
+        lut = procesador.traspuesta(lut);
+        return true;
+    }
+
+    public void rotarImagenAngulos90(int grados) {
+        if (grados == 90) {
+            lut = procesador.rotarImagen90Grados(lut);
+        } else {
+            lut = procesador.espejoHorizontal(lut);
+            lut = procesador.espejoVertical(lut);
+            if (grados == 270) {
+                lut = procesador.rotarImagen90Grados(lut);
+            }
+        }
     }
 }

@@ -62,6 +62,13 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.gamma.setEnabled(false);
                         panel.diferenciaImagenes.setEnabled(false);
                         panel.histogramaDif.setEnabled(false);
+
+                        panel.espejoHorizontal.setEnabled(false);
+                        panel.espejoVertical.setEnabled(false);
+                        panel.traspuesta.setEnabled(false);
+                        panel.rotacion90.setEnabled(false);
+                        panel.rotacion180.setEnabled(false);
+                        panel.rotacion270.setEnabled(false);
                     }
                 }
                 case "Guardar" -> manejador.guardaArchivoDeImagen(panel);
@@ -84,6 +91,14 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.especificarHistograma.setEnabled(true);
                         panel.gamma.setEnabled(true);
                         panel.diferenciaImagenes.setEnabled(true);
+
+                        panel.espejoHorizontal.setEnabled(true);
+                        panel.espejoVertical.setEnabled(true);
+                        panel.traspuesta.setEnabled(true);
+                        panel.rotacion90.setEnabled(true);
+                        panel.rotacion180.setEnabled(true);
+                        panel.rotacion270.setEnabled(true);
+
                     }
                 }
                 case "Histogramas" -> panel.esqueInf2.show(panel.panelDerecho, "carta2");
@@ -137,6 +152,30 @@ public class Controlador implements ActionListener, MouseListener {
                 }
                 case "Histograma de la imagen diferencia" -> {
                     panel.esqueInf2.show(panel.panelDerecho, "carta4");
+                }
+                case "Espejo horizontal" -> {
+                    manejador.espejoHorizontal();
+                    manejador.confirmar(panel);
+                }
+                case "Espejo vertical" -> {
+                    manejador.espejoVertical();
+                    manejador.confirmar(panel);
+                }
+                case "Traspuesta de la imagen" -> {
+                    if(manejador.traspuesta(panel))
+                        manejador.confirmar(panel);
+                }
+                case "Rotar imagen 90 grados" -> {
+                    manejador.rotarImagenAngulos90(90);
+                    manejador.confirmar(panel);
+                }
+                case "Rotar imagen 180 grados" -> {
+                    manejador.rotarImagenAngulos90(180);
+                    manejador.confirmar(panel);
+                }
+                case "Rotar imagen 270 grados" -> {
+                    manejador.rotarImagenAngulos90(270);
+                    manejador.confirmar(panel);
                 }
             }
         } else if (source instanceof JButton) {

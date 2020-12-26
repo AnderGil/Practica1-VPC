@@ -1,5 +1,4 @@
 import java.awt.*;
-import java.awt.image.*;
 import java.io.IOException;
 import java.io.File;
 import java.awt.image.BufferedImage;
@@ -333,5 +332,119 @@ public class ProcesadorDeImagenes extends Canvas {
         }
 
         imagenModificada = img;
+    }
+
+    public int[] espejoVertical(int[] lut) {
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this); //Alto
+        int gris;
+        BufferedImage img = new BufferedImage(a, h, BufferedImage.TYPE_INT_RGB);
+        Color color;
+        int[] newLut = new int[lut.length];
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = lut[i*(h-1)+j];
+                color = new Color(gris, gris, gris);
+                img.setRGB(i, h-1-j, color.getRGB());
+            }
+        }
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = (new Color(img.getRGB(i,j), true)).getBlue();
+                newLut[i*(h-1) + j] = gris;
+            }
+        }
+
+        imagenModificada = img;
+
+        return newLut;
+    }
+
+    public int[] espejoHorizontal(int[] lut) {
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this); //Alto
+        int gris;
+        BufferedImage img = new BufferedImage(a, h, BufferedImage.TYPE_INT_RGB);
+        Color color;
+        int[] newLut = new int[lut.length];
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = lut[i*(h-1)+j];
+                color = new Color(gris, gris, gris);
+                img.setRGB(a-1-i, j, color.getRGB());
+            }
+        }
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = (new Color(img.getRGB(i,j), true)).getBlue();
+                newLut[i*(h-1) + j] = gris;
+            }
+        }
+
+        imagenModificada = img;
+
+        return newLut;
+    }
+
+
+    public int[] traspuesta(int[] lut) {
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this); //Alto
+        int gris;
+        BufferedImage img = new BufferedImage(h, a, BufferedImage.TYPE_INT_RGB);
+        Color color;
+        int[] newLut = new int[lut.length];
+
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < a; i++) {
+                gris = lut[i*(h-1)+j];
+                color = new Color(gris, gris, gris);
+                img.setRGB(j, i, color.getRGB());
+            }
+        }
+
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+                gris = (new Color(img.getRGB(i,j), true)).getBlue();
+                newLut[i*(img.getHeight()-1) + j] = gris;
+            }
+        }
+
+        imagenModificada = img;
+
+        return newLut;
+    }
+
+    public int[] rotarImagen90Grados(int[] lut) {
+        int a = imagenBase.getWidth(this);  //Ancho
+        int h = imagenBase.getHeight(this); //Alto
+        int gris;
+        Color color;
+        BufferedImage newImg = new BufferedImage(h, a, BufferedImage.TYPE_INT_RGB);
+
+        int[] newLut = new int[a*h];
+
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < h; j++) {
+                gris = lut[i*(h-1)+j];
+                color = new Color(gris, gris, gris);
+                newImg.setRGB(h - 1 - j, i, color.getRGB());
+            }
+        }
+
+        for (int i = 0; i < newImg.getWidth(); i++) {
+            for (int j = 0; j < newImg.getHeight(); j++) {
+                gris = (new Color(newImg.getRGB(i,j), true)).getBlue();
+                newLut[i*(newImg.getHeight()-1) + j] = gris;
+            }
+        }
+
+        imagenModificada = newImg;
+
+        return newLut;
     }
 }

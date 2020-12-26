@@ -18,8 +18,9 @@ public class PanelSwing extends JPanel {
     String nombreArchivo, ruta;
     JFreeChart hist, histAcumulado, histDiferencia;
     JMenuBar barraMenu;
-    JMenu menuArchivo, menuEdicion, menuVer;
+    JMenu menuArchivo, menuEdicion, menuVer, menuGeometrico;
     JMenuItem abrir, guardar, salir, escala, histogramas, histogramaDif, subimagen, datos, diferenciaImagenes, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
+    JMenuItem espejoVertical, espejoHorizontal, traspuesta, rotacion90, rotacion180, rotacion270;
     JScrollPane panelDespl, panelDespl2;
     JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, entropiaImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
     ArrayList<JTextArea> coordenadas;
@@ -50,6 +51,7 @@ public class PanelSwing extends JPanel {
         menuArchivo = new JMenu("Archivo");
         menuEdicion = new JMenu("Edición");
         menuVer = new JMenu("Ver");
+        menuGeometrico = new JMenu("Operaciones geométricas");
         abrir = menuArchivo.add("Abrir");
         guardar = menuArchivo.add("Guardar");
         guardar.setEnabled(false);
@@ -71,15 +73,31 @@ public class PanelSwing extends JPanel {
         especificarHistograma.setEnabled(false);
         gamma.setEnabled(false);
         diferenciaImagenes.setEnabled(false);
+
         histogramas = menuVer.add("Histogramas");
         histogramas.setEnabled(false);
         datos = menuVer.add("Datos de la imagen");
         datos.setEnabled(false);
         histogramaDif = menuVer.add("Histograma de la imagen diferencia");
         histogramaDif.setEnabled(false);
+
+        espejoVertical = menuGeometrico.add("Espejo vertical");
+        espejoHorizontal = menuGeometrico.add("Espejo horizontal");
+        traspuesta = menuGeometrico.add("Traspuesta de la imagen");
+        rotacion90 = menuGeometrico.add("Rotar imagen 90 grados");
+        rotacion180 = menuGeometrico.add("Rotar imagen 180 grados");
+        rotacion270 = menuGeometrico.add("Rotar imagen 270 grados");
+        espejoHorizontal.setEnabled(false);
+        espejoVertical.setEnabled(false);
+        traspuesta.setEnabled(false);
+        rotacion90.setEnabled(false);
+        rotacion180.setEnabled(false);
+        rotacion270.setEnabled(false);
+
         barraMenu.add(menuArchivo);
         barraMenu.add(menuEdicion);
         barraMenu.add(menuVer);
+        barraMenu.add(menuGeometrico);
         this.add("North",barraMenu);  //Agregamos la barra de menu
         creapanelCentral();     //Creamos el panel en el que se mostrara la imagen seleccionada
         creapanelBajo();     //Creamos el panel en el que se mostraran los controles para manipular la imagen

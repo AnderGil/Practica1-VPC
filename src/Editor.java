@@ -16,6 +16,12 @@ public class Editor extends JFrame{
         panel.lienzo.addMouseListener(controlador);
         panel.abrir.addActionListener(controlador);
         panel.guardar.addActionListener(controlador);
+        panel.espejoVertical.addActionListener(controlador);
+        panel.espejoHorizontal.addActionListener(controlador);
+        panel.traspuesta.addActionListener(controlador);
+        panel.rotacion90.addActionListener(controlador);
+        panel.rotacion270.addActionListener(controlador);
+        panel.rotacion180.addActionListener(controlador);
         panel.salir.addActionListener(controlador);
         panel.escala.addActionListener(controlador);
         panel.subimagen.addActionListener(controlador);
