@@ -20,13 +20,15 @@ public class PanelSwing extends JPanel {
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion, menuVer, menuGeometrico;
     JMenuItem abrir, guardar, salir, escala, histogramas, histogramaDif, subimagen, datos, diferenciaImagenes, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
-    JMenuItem espejoVertical, espejoHorizontal, traspuesta, rotacion90, rotacion180, rotacion270;
+    JMenuItem espejoVertical, espejoHorizontal, traspuesta, rotacion90, rotacion180, rotacion270, escalado;
     JScrollPane panelDespl, panelDespl2;
-    JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, entropiaImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel;
+    JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, entropiaImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel, alturaImagen, anchuraImagen;
     ArrayList<JTextArea> coordenadas;
-    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma, umbral;
-    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5, aceptar6;
-    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelHistograma, panelHistogramaDiferencia, panelUmbral, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
+    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma, umbral, newAltura, newAnchura;
+    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5, aceptar6, aceptar7;
+    JRadioButton interpolacionVecinoProximo, interpolacionBilineal;
+    ButtonGroup interpolacion;
+    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelEscalado, panelHistograma, panelHistogramaDiferencia, panelUmbral, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
     int altura = 80;
     Image imagen;
     Image imgAux;
@@ -87,12 +89,14 @@ public class PanelSwing extends JPanel {
         rotacion90 = menuGeometrico.add("Rotar imagen 90 grados");
         rotacion180 = menuGeometrico.add("Rotar imagen 180 grados");
         rotacion270 = menuGeometrico.add("Rotar imagen 270 grados");
+        escalado = menuGeometrico.add("Escalar la imagen");
         espejoHorizontal.setEnabled(false);
         espejoVertical.setEnabled(false);
         traspuesta.setEnabled(false);
         rotacion90.setEnabled(false);
         rotacion180.setEnabled(false);
         rotacion270.setEnabled(false);
+        escalado.setEnabled(false);
 
         barraMenu.add(menuArchivo);
         barraMenu.add(menuEdicion);
@@ -226,6 +230,32 @@ public class PanelSwing extends JPanel {
         panelUmbral.add(umbral);
         panelUmbral.add(aceptar6);
 
+
+        aceptar7 = new JButton("Aceptar");
+        newAltura = new JTextArea(1, 4);
+        newAnchura = new JTextArea(1, 4);
+        alturaImagen = new JLabel("");
+        anchuraImagen = new JLabel("");
+        interpolacionBilineal = new JRadioButton("Interpolación bilineal");
+        interpolacionVecinoProximo = new JRadioButton("Interpolación por vecino más próximo");
+        interpolacion = new ButtonGroup();
+        interpolacion.add(interpolacionVecinoProximo);
+        interpolacion.add(interpolacionBilineal);
+        panelEscalado = new JPanel(new FlowLayout());
+        panelEscalado.add(new JLabel("Dimensiones actuales de la imagen. Altura: "));
+        panelEscalado.add(alturaImagen);
+        panelEscalado.add(new JLabel(" Anchura: "));
+        panelEscalado.add(anchuraImagen);
+        panelEscalado.add(new JLabel("Elige las nuevas dimensiones. Nueva altura: "));
+        panelEscalado.add(newAltura);
+        panelEscalado.add(new JLabel(" Nueva anchura: "));
+        panelEscalado.add(newAnchura);
+        panelEscalado.add(new JLabel(" Selecciona el método de interpolación: "));
+        panelEscalado.add(interpolacionVecinoProximo);
+        interpolacionVecinoProximo.setSelected(true);
+        panelEscalado.add(interpolacionBilineal);
+        panelEscalado.add(aceptar7);
+
         panelBajo.add("carta1", panelVacio);
         panelBajo.add("carta2", panelDatos);
         panelBajo.add("carta3", panelSubImagen);
@@ -234,6 +264,7 @@ public class PanelSwing extends JPanel {
         panelBajo.add("carta6", panelAjusteTramos2);
         panelBajo.add("carta7", panelGamma);
         panelBajo.add("carta8", panelUmbral);
+        panelBajo.add("carta9", panelEscalado);
         esqueInf1.show(panelBajo, "carta1");
         this.add("South",panelBajo);
     }

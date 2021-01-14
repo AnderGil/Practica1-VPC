@@ -464,4 +464,28 @@ public class ManejadorDeImagenes {
             }
         }
     }
+
+    public void mostrarDimensiones(PanelSwing panel) {
+        Image img = procesador.devuelveImagenBase();
+        panel.alturaImagen.setText(String.valueOf(img.getHeight(null)));
+        panel.anchuraImagen.setText(String.valueOf(img.getWidth(null)));
+    }
+
+    public boolean escalarImagen(PanelSwing panel) throws InterruptedException {
+        Image img = procesador.devuelveImagenBase();
+
+        int newAltura = Integer.valueOf(panel.newAltura.getText());
+        int newAnchura = Integer.valueOf(panel.newAnchura.getText());
+
+        double proporcionAltura = (double) newAltura / (double) img.getHeight(null);
+        double proporcionAnchura = (double) newAnchura / (double) img.getWidth(null);
+
+        if (panel.interpolacionVecinoProximo.isSelected()) {
+            procesador.escalarVecinoProximo(newAltura, newAnchura, proporcionAltura, proporcionAnchura, lut);
+        } else {
+            procesador.escalarBilineal(newAltura, newAnchura, proporcionAltura, proporcionAnchura, lut);
+        }
+
+        return true;
+    }
 }

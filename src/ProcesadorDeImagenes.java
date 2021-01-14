@@ -447,4 +447,63 @@ public class ProcesadorDeImagenes extends Canvas {
 
         return newLut;
     }
+
+    public void escalarVecinoProximo(int newAltura, int newAnchura, double proporcionAltura, double proporcionAnchura, int[] lut) {
+        BufferedImage img = new BufferedImage(newAnchura, newAltura, BufferedImage.TYPE_INT_RGB);
+        int gris, vecinoProximoI, vecinoProximoJ;
+        Color color;
+        for (int i = 0; i < newAnchura; i++) {
+            vecinoProximoI = (int) (i / proporcionAnchura);
+            for (int j = 0; j < newAltura; j++) {
+                vecinoProximoJ = (int) (j / proporcionAltura);
+
+                gris = lut[vecinoProximoI*(imagenBase.getHeight(null)-1)+vecinoProximoJ];
+                color = new Color(gris, gris, gris);
+
+                img.setRGB(i, j, color.getRGB());
+            }
+        }
+
+        imagenModificada = img;
+    }
+
+    public void escalarBilineal(int newAltura, int newAnchura, double proporcionAltura, double proporcionAnchura, int[] lut) throws InterruptedException {
+        BufferedImage img = new BufferedImage(newAnchura, newAltura, BufferedImage.TYPE_INT_RGB);
+        BufferedImage imgOriginal = creaBufferedImage(devuelveImagenBase());
+        int gris, X, X2, Y, Y2, A, B, C, D, height;
+        double x, y, p, q;
+        Color color;
+
+        MediaTracker tracker = new MediaTracker(this);
+
+        tracker.addImage(imgOriginal, 0);
+        tracker.waitForID(0);
+
+        height = imgOriginal.getHeight();
+        for (int i = 0; i < newAnchura; i++) {
+            x = i / proporcionAnchura;
+            X = (int) Math.floor(x);
+            X2 = X + 1;
+            p = x - X;
+            for (int j = 0; j < newAltura; j++) {
+                y = j / proporcionAltura;
+                Y = (int) Math.floor(y);
+                Y2 = Y + 1;
+                q = y - Y;
+
+                A = lut[X*(height-1)+Y2];
+                B = lut[X2*(height-1)+Y2];
+                C = lut[X*(height-1)+Y];
+                D = lut[X2*(height-1)+Y];
+               // gris = lut[i*(h-1)+j];
+
+                gris = (int) (C + (D-C)*p + (A-C)*q + (B+C-A-D)*p*q);
+                color = new Color(gris, gris, gris);
+
+                img.setRGB(i, j, color.getRGB());
+            }
+        }
+
+        imagenModificada = img;
+    }
 }
