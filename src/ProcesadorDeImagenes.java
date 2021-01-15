@@ -137,16 +137,15 @@ public class ProcesadorDeImagenes extends Canvas {
         int totalDePixeles = a * h;
         int[] lut = new int[totalDePixeles];   //pixeles
         BufferedImage bImagen = creaBufferedImage(imagenBase);
-
         for (int i = 0; i < a; i++) {
             for (int j = 0; j < h; j++) {
                 gris = bImagen.getRGB(i,j);
                 Color color = new Color(gris, true);
-
+                if (color.getGreen()==255);
+                int xd = i*(h-1) + j;
                 lut[i*(h-1) + j] = color.getGreen();
             }
         }
-
         return lut;
     }
 
@@ -495,7 +494,6 @@ public class ProcesadorDeImagenes extends Canvas {
                 B = lut[X2*(height-1)+Y2];
                 C = lut[X*(height-1)+Y];
                 D = lut[X2*(height-1)+Y];
-               // gris = lut[i*(h-1)+j];
 
                 gris = (int) (C + (D-C)*p + (A-C)*q + (B+C-A-D)*p*q);
                 color = new Color(gris, gris, gris);
@@ -505,5 +503,45 @@ public class ProcesadorDeImagenes extends Canvas {
         }
 
         imagenModificada = img;
+    }
+
+    public int rotarImagen(double minX, double minY, int sizeX, int sizeY, double grados) throws InterruptedException {
+        BufferedImage img =  new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_INT_RGB);
+        BufferedImage imgBase = creaBufferedImage(imagenBase);
+        double xPrima, yPrima, x, y;
+        int gris, xVecino, yVecino, cont = 0;
+        Color color;
+
+        MediaTracker tracker = new MediaTracker(this);
+
+        tracker.addImage(imgBase, 0);
+        tracker.waitForID(0);
+
+        for (int indiceX = 0; indiceX < sizeX; indiceX++) {
+            xPrima = indiceX + minX;
+            for (int indiceY = 0; indiceY < sizeY; indiceY++) {
+                yPrima = indiceY + minY;
+
+                x = Math.cos(-grados)*xPrima - Math.sin(-grados)*yPrima;
+                y = Math.sin(-grados)*xPrima + Math.cos(-grados)*yPrima;
+
+
+                xVecino = (int) Math.round(x);
+                yVecino = (int) Math.round(y);
+                if (xVecino < 0 || xVecino >= imagenBase.getWidth(null) || yVecino < 0 || yVecino >= imagenBase.getHeight(null)) {
+                    color = new Color(255, 255, 255);
+                    cont++;
+                } else {
+                    gris = imgBase.getRGB(xVecino, yVecino);
+                    color = new Color(gris, true);
+                    gris = color.getBlue();
+                    color = new Color(gris, gris, gris);
+                }
+                img.setRGB(indiceX, indiceY, color.getRGB());
+            }
+        }
+
+        imagenModificada = img;
+        return cont;
     }
 }

@@ -69,7 +69,8 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.rotacion90.setEnabled(false);
                         panel.rotacion180.setEnabled(false);
                         panel.rotacion270.setEnabled(false);
-                        panel.escalado.setEnabled(true);
+                        panel.escalado.setEnabled(false);
+                        panel.rotacion.setEnabled(false);
                     }
                 }
                 case "Guardar" -> manejador.guardaArchivoDeImagen(panel);
@@ -100,6 +101,7 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.rotacion180.setEnabled(true);
                         panel.rotacion270.setEnabled(true);
                         panel.escalado.setEnabled(true);
+                        panel.rotacion.setEnabled(true);
                     }
                 }
                 case "Histogramas" -> panel.esqueInf2.show(panel.panelDerecho, "carta2");
@@ -183,6 +185,10 @@ public class Controlador implements ActionListener, MouseListener {
                     panel.esqueInf1.show(panel.panelBajo, "carta9");
                     mode = "escalar";
                 }
+                case "Rotar imagen" -> {
+                    panel.esqueInf1.show(panel.panelBajo, "carta10");
+                    mode = "rotar";
+                }
             }
         } else if (source instanceof JButton) {
             JButton i = (JButton) source;
@@ -262,6 +268,20 @@ public class Controlador implements ActionListener, MouseListener {
                         panel.esqueInf2.show(panel.panelDerecho, "carta1");
                         panel.esqueInf1.show(panel.panelBajo, "carta1");
                     }
+                }
+            }
+            else if (i.getText().equals("Aceptar") && mode.compareTo("rotar") == 0) {
+                try {
+                    manejador.rotar(panel);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                int confirmado = manejador.confirmar(panel);
+                if (confirmado == 0) {
+                    manejador.actualizarLUT();
+                    manejador.actualizarDatos(panel);
+                    panel.esqueInf2.show(panel.panelDerecho, "carta1");
+                    panel.esqueInf1.show(panel.panelBajo, "carta1");
                 }
             }
         }

@@ -20,16 +20,16 @@ public class PanelSwing extends JPanel {
     JMenuBar barraMenu;
     JMenu menuArchivo, menuEdicion, menuVer, menuGeometrico;
     JMenuItem abrir, guardar, salir, escala, histogramas, histogramaDif, subimagen, datos, diferenciaImagenes, ajusteBrilloContraste, ajusteTramos, ecualizarHistograma, especificarHistograma, gamma;
-    JMenuItem espejoVertical, espejoHorizontal, traspuesta, rotacion90, rotacion180, rotacion270, escalado;
+    JMenuItem espejoVertical, espejoHorizontal, traspuesta, rotacion90, rotacion180, rotacion270, escalado, rotacion;
     JScrollPane panelDespl, panelDespl2;
     JLabel tipoArchivo, tamanoImagen, rangoValores, brilloImagen, entropiaImagen, contrasteImagen, brilloImagen2, contrasteImagen2, pixelClicado, errorLabel, alturaImagen, anchuraImagen;
     ArrayList<JTextArea> coordenadas;
-    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma, umbral, newAltura, newAnchura;
-    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5, aceptar6, aceptar7;
-    JRadioButton interpolacionVecinoProximo, interpolacionBilineal;
-    ButtonGroup interpolacion;
-    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelEscalado, panelHistograma, panelHistogramaDiferencia, panelUmbral, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
-    int altura = 80;
+    JTextArea supX, supY, subX, subY, brilloArea, contrasteArea, numTramos, inicio, coefGamma, umbral, newAltura, newAnchura, gradosRotacion;
+    JButton aceptar1, aceptar2, aceptar3, aceptar4, aceptar5, aceptar6, aceptar7, aceptar8;
+    JRadioButton interpolacionVecinoProximo, interpolacionBilineal, sentidoHorario, sentidoAntiHorario;
+    ButtonGroup interpolacion, sentidoRotacion;
+    JPanel panelBajo, panelDatos, panelVacio, panelGamma, panelRotacion, panelEscalado, panelHistograma, panelHistogramaDiferencia, panelUmbral, panelDerecho, panelBrilloContraste, panelAjusteTramos2, panelSubImagen, panelAjusteTramos;
+    int altura = 80, cont;
     Image imagen;
     Image imgAux;
     Editor editor;
@@ -90,6 +90,7 @@ public class PanelSwing extends JPanel {
         rotacion180 = menuGeometrico.add("Rotar imagen 180 grados");
         rotacion270 = menuGeometrico.add("Rotar imagen 270 grados");
         escalado = menuGeometrico.add("Escalar la imagen");
+        rotacion = menuGeometrico.add("Rotar imagen");
         espejoHorizontal.setEnabled(false);
         espejoVertical.setEnabled(false);
         traspuesta.setEnabled(false);
@@ -97,6 +98,7 @@ public class PanelSwing extends JPanel {
         rotacion180.setEnabled(false);
         rotacion270.setEnabled(false);
         escalado.setEnabled(false);
+        rotacion.setEnabled(false);
 
         barraMenu.add(menuArchivo);
         barraMenu.add(menuEdicion);
@@ -256,6 +258,23 @@ public class PanelSwing extends JPanel {
         panelEscalado.add(interpolacionBilineal);
         panelEscalado.add(aceptar7);
 
+        aceptar8 = new JButton("Aceptar");
+        panelRotacion = new JPanel(new FlowLayout());
+        gradosRotacion = new JTextArea(1, 4);
+        sentidoHorario = new JRadioButton("Sentido horario");
+        sentidoAntiHorario = new JRadioButton("Sentido antihorario");
+        sentidoRotacion = new ButtonGroup();
+        sentidoRotacion.add(sentidoAntiHorario);
+        sentidoRotacion.add(sentidoHorario);
+        panelRotacion.add(new JLabel("Introduce los grados de rotación: "));
+        panelRotacion.add(gradosRotacion);
+        panelRotacion.add(new JLabel("Elige el sentido de la rotación: "));
+        panelRotacion.add(sentidoHorario);
+        panelRotacion.add(sentidoAntiHorario);
+        sentidoHorario.setSelected(true);
+        panelRotacion.add(aceptar8);
+
+
         panelBajo.add("carta1", panelVacio);
         panelBajo.add("carta2", panelDatos);
         panelBajo.add("carta3", panelSubImagen);
@@ -265,6 +284,7 @@ public class PanelSwing extends JPanel {
         panelBajo.add("carta7", panelGamma);
         panelBajo.add("carta8", panelUmbral);
         panelBajo.add("carta9", panelEscalado);
+        panelBajo.add("carta10", panelRotacion);
         esqueInf1.show(panelBajo, "carta1");
         this.add("South",panelBajo);
     }

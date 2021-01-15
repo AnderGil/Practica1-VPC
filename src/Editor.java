@@ -22,6 +22,7 @@ public class Editor extends JFrame{
         panel.rotacion90.addActionListener(controlador);
         panel.rotacion270.addActionListener(controlador);
         panel.rotacion180.addActionListener(controlador);
+        panel.rotacion.addActionListener(controlador);
         panel.escalado.addActionListener(controlador);
         panel.salir.addActionListener(controlador);
         panel.escala.addActionListener(controlador);
@@ -40,6 +41,7 @@ public class Editor extends JFrame{
         panel.aceptar5.addActionListener(controlador);
         panel.aceptar6.addActionListener(controlador);
         panel.aceptar7.addActionListener(controlador);
+        panel.aceptar8.addActionListener(controlador);
         panel.datos.addActionListener(controlador);
         panel.histogramas.addActionListener(controlador);
         contentPane.add(panel);

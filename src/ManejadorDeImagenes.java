@@ -12,7 +12,7 @@ import javax.swing.*;
 
 public class ManejadorDeImagenes {
     ProcesadorDeImagenes procesador;
-    int min, max, xPixel, yPixel, grisPixel;
+    int min, max, xPixel, yPixel, grisPixel, cont, cantBlanco;
     int M = 256;
     double brillo, contraste, entropia;
     double[] histograma, histogramaAcumulado, cdf, pdf;
@@ -118,12 +118,20 @@ public class ManejadorDeImagenes {
         min = M;
         max = -1;
         entropia = 0;
+        int count = 0;
         for (int i = 0; i < lut.length; i++) {
             gris = lut[i];
+            if(gris == 255) count++;
             histograma[gris] = histograma[gris] +1;
             sumaIntensidades = sumaIntensidades + (double) gris;
             if (gris < min) min = gris;
             if (gris > max) max = gris;
+        }
+        if (cont == 0) {
+            cantBlanco = (int) histograma[255];
+        } else {
+            histograma[255] = cantBlanco;
+            cont = 0;
         }
 
         double sum = 0;
@@ -198,6 +206,7 @@ public class ManejadorDeImagenes {
         }
         else {
             lut = procesador.actualizarLUT();
+            cont = 0;
         }
 
         panel.esqueInf2.show(panel.panelDerecho, "carta1");
@@ -487,5 +496,51 @@ public class ManejadorDeImagenes {
         }
 
         return true;
+    }
+
+    private double[] multiplicarMatriz(int[] coords, double grados) {
+        double[][] matrix = new double[2][2];
+        double[] result = new double[2];
+
+        matrix[0][0] = Math.cos(grados);
+        matrix[0][1] = -Math.sin(grados);
+        matrix[1][0] = Math.sin(grados);
+        matrix[1][1] = Math.cos(grados);
+
+        result[0] = matrix[0][0]*coords[0] + matrix[0][1]*coords[1];
+        result[1] = matrix[1][0]*coords[0] + matrix[1][1]*coords[1];
+
+        return result;
+    }
+
+    public void rotar(PanelSwing panel) throws InterruptedException {
+        double grados = Double.valueOf(panel.gradosRotacion.getText());
+        Image img = procesador.devuelveImagenBase();
+        double[] Eprima, Fprima, Gprima, Hprima;
+        double minX, maxX, minY, maxY;
+        int sizeX, sizeY;
+
+        if(panel.sentidoAntiHorario.isSelected())
+            grados = - grados;
+        grados = Math.toRadians(grados);
+
+        int[] E = {0, 0};
+        int[] F = {img.getWidth(null)-1, 0};
+        int[] H = {0, img.getHeight(null)-1};
+        int[] G = {img.getWidth(null)-1, img.getHeight(null)-1};
+
+        Eprima = multiplicarMatriz(E, grados);
+        Fprima = multiplicarMatriz(F, grados);
+        Gprima = multiplicarMatriz(G, grados);
+        Hprima = multiplicarMatriz(H, grados);
+
+        minX = Math.min(Math.min(Eprima[0], Fprima[0]), Math.min(Gprima[0], Hprima[0]));
+        maxX = Math.max(Math.max(Eprima[0], Fprima[0]), Math.max(Gprima[0], Hprima[0]));
+        minY = Math.min(Math.min(Eprima[1], Fprima[1]), Math.min(Gprima[1], Hprima[1]));
+        maxY = Math.max(Math.max(Eprima[1], Fprima[1]), Math.max(Gprima[1], Hprima[1]));
+
+        sizeX = (int) Math.ceil(Math.abs(maxX - minX));
+        sizeY = (int) Math.ceil(Math.abs(maxY - minY));
+        cont = procesador.rotarImagen(minX, minY, sizeX, sizeY, grados);
     }
 }
